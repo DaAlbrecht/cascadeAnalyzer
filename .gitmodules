@@ -1,6 +1,3 @@
-[submodule "schemeEditor/externals/wxShapeFramework"]
-	path = schemeEditor/externals/wxShapeFramework
-	url = https://github.com/danselmi/wxShapeFramework
-[submodule "schemeEditor/schemeEditor/submodules/WxShapeFramework"]
-	path = schemeEditor/schemeEditor/submodules/WxShapeFramework
+[submodule "schemeEditor/submodules/WxShapeFramework"]
+	path = schemeEditor/submodules/WxShapeFramework
 	url = https://github.com/danselmi/wxShapeFramework

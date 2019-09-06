@@ -52,7 +52,7 @@ class OutputDataViewerFrame: public wxFrame
 
         void ParseCsvFile(wxWindow* &parent,wxWindowID &id, wxListCtrl*&ListCtrl1);
         void CreatList( std::vector<std::string> &buf, uint8_t &parsedlines, size_t &bufoffset, wxWindow* &parent, wxWindowID &id, wxListCtrl*  &ListCtrl1);
-        void AutoSizeHeader(wxListCtrl *const &ListCtrl1);
+        void AutoSizeHeader(wxListCtrl *const &ListCtrl1, int &colsize);
 };
 
 #endif // OUTPUTDATAVIEWERMAIN_H

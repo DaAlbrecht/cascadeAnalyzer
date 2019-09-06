@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="schemeEditor" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Release">
+				<Option output="bin/gcc/CascadeAnalyzer.exe" prefix_auto="0" extension_auto="0" />
+				<Option object_output=".objsu" />
+				<Option type="0" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-Wall" />
+					<Add option="-O3" />
+					<Add option="-Winvalid-pch" />
+					<Add option='-include &quot;wx_pch.h&quot;' />
+					<Add option="-fno-strict-aliasing" />
+					<Add option="-DWXUSINGDLL" />
+					<Add option="-DUNICODE" />
+					<Add option="-D_UNICODE" />
+					<Add option="-D__WX__" />
+					<Add option="-D__WXMSW__" />
+					<Add option="-DWIN32" />
+					<Add option="-D_WINDOWS" />
+					<Add option="-DNDEBUG" />
+					<Add directory="../../../wxShapeFramework_trunk/include" />
+					<Add directory="$(#WX.include)" />
+					<Add directory="$(#WX.lib)/gcc_dll/mswu" />
+					<Add directory="../../../wxShapeFramework_trunk/lib/gcc_dll" />
+				</Compiler>
+				<ResourceCompiler>
+					<Add directory="../../include" />
+					<Add directory="$(#WX.include)" />
+					<Add directory="$(#WX.lib)/gcc_dll/mswu" />
+				</ResourceCompiler>
+				<Linker>
+					<Add option="-s" />
+					<Add library="wxmsw31u_wxsf" />
+					<Add library="wxbase31u" />
+					<Add library="wxmsw31u_core" />
+					<Add library="wxbase31u_xml" />
+					<Add directory="bin/gcc" />
+					<Add directory="../../../wxShapeFramework_trunk/build" />
+					<Add directory="$(#WX.lib)/gcc_dll" />
+					<Add directory="../../lib/gcc_dll" />
+					<Add directory="../../../wxShapeFramework_trunk/lib/gcc_dll" />
+				</Linker>
+			</Target>
+			<Target title="Debug">
+				<Option output="bin/gcc/CascadeAnalyzer.exe" prefix_auto="0" extension_auto="0" />
+				<Option object_output=".objsud" />
+				<Option type="0" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-Wall" />
+					<Add option="-g" />
+					<Add option="-Winvalid-pch" />
+					<Add option='-include &quot;wx_pch.h&quot;' />
+					<Add option="-O0" />
+					<Add option="-DWXUSINGDLL" />
+					<Add option="-DUNICODE" />
+					<Add option="-D_UNICODE" />
+					<Add option="-D__WX__" />
+					<Add option="-D__WXMSW__" />
+					<Add option="-DWIN32" />
+					<Add option="-D_WINDOWS" />
+					<Add option="-DDEBUG" />
+					<Add option="-D_DEBUG" />
+					<Add option="-D__WXDEBUG__" />
+					<Add directory="../../../wxShapeFramework_trunk/include" />
+					<Add directory="$(#WX.include)" />
+					<Add directory="$(#WX.lib)/gcc_dll/mswu" />
+					<Add directory="../../../wxShapeFramework_trunk/lib/gcc_dll" />
+				</Compiler>
+				<ResourceCompiler>
+					<Add directory="../../include" />
+					<Add directory="$(#WX.include)" />
+					<Add directory="$(#WX.lib)/gcc_dll/mswud" />
+				</ResourceCompiler>
+				<Linker>
+					<Add library="wxmsw31u_wxsf" />
+					<Add library="wxbase31u" />
+					<Add library="wxmsw31u_core" />
+					<Add library="wxbase31u_xml" />
+					<Add directory="bin/gcc" />
+					<Add directory="../../../wxShapeFramework_trunk/build" />
+					<Add directory="$(#WX.lib)/gcc_dll" />
+					<Add directory="../../lib/gcc_dll" />
+					<Add directory="../../../wxShapeFramework_trunk/lib/gcc_dll" />
+				</Linker>
+			</Target>
+		</Build>
+		<Unit filename="Art.h" />
+		<Unit filename="FrameCanvas.cpp" />
+		<Unit filename="FrameCanvas.h" />
+		<Unit filename="GUI.cpp" />
+		<Unit filename="GUI.h" />
+		<Unit filename="Ids.h" />
+		<Unit filename="MainApp.cpp" />
+		<Unit filename="MainApp.h" />
+		<Unit filename="MainFrame.cpp" />
+		<Unit filename="MainFrame.h" />
+		<Unit filename="rf_cascade_Shapes/ConnectionLineShape.cpp" />
+		<Unit filename="rf_cascade_Shapes/ConnectionLineShape.h" />
+		<Unit filename="rf_cascade_Shapes/MultiportBlockShape.cpp" />
+		<Unit filename="rf_cascade_Shapes/MultiportBlockShape.h" />
+		<Unit filename="rf_cascade_Shapes/gainblockShape.cpp" />
+		<Unit filename="rf_cascade_Shapes/gainblockShape.h" />
+		<Unit filename="wxSF.rc">
+			<Option compilerVar="WINDRES" />
+		</Unit>
+		<Unit filename="wx_pch.cpp" />
+		<Unit filename="wx_pch.h">
+			<Option compile="1" />
+			<Option weight="0" />
+		</Unit>
+		<Extensions>
+			<code_completion />
+			<envvars />
+			<debugger />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>

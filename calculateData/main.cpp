@@ -140,10 +140,10 @@ public:
     virtual uint8_t getNumOfOutputs()const override{ return inputs_;}
     virtual std::string getIdentity()const override{return "MultiPortBlock";}
 private:
-    uint8_t outputs_;
-    uint8_t inputs_;
     double gain_;
     double nf_;
+    uint8_t outputs_;
+    uint8_t inputs_;
 
 };
 
@@ -180,12 +180,12 @@ private:
 
 int main(int argc, const char** argv)
 {
-//    if(argc < 3)
-//    {
-//        std::cerr  << "Usage:" << argv[0] << "\n" << "ERROR: input_data file or output_data file destination is missing" << "\n";
-//        std::getchar();
-//        return -1;
-//    }
+    if(argc < 3)
+    {
+        std::cerr  << "Usage:" << argv[0] << "\n" << "ERROR: input_data file or output_data file destination is missing" << "\n";
+        std::getchar();
+        return -1;
+    }
 
     BlockArray myBlockArray;
     ConnectionArray myConnectionArray;
@@ -238,8 +238,7 @@ bool ReadInputData(const char **argv,BlockArray &myBlockArray, ConnectionArray &
     };
     std::ifstream myfile;
     std::string line;
-//    myfile.open(argv[1]);
-    myfile.open("input_data.txt");
+    myfile.open(argv[1]);
     State state = Header;
     if(!myfile.is_open())
         return false;
@@ -630,7 +629,7 @@ void CreatOutputFile(const char **argv, BlockArray &myBlockArray, NetworkGraph &
     }
     outfile << endl;
     outfile.close();
-//    if(std::remove(argv[1]) != 0)
-//        std::cerr << "Error deleting file" << "\n";
+    if(std::remove(argv[1]) != 0)
+        std::cerr << "Error deleting file" << "\n";
     return;
 }

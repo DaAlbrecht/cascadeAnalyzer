@@ -44,7 +44,7 @@ bool multiportBlock::Contains(const wxPoint& pos)
     if(!bbRct.Contains(pos))return false;
 
     wxRealPoint center = GetCenter();
-    double k = ((double)bbRct.GetHeight()/2)/((double)bbRct.GetWidth()/2);
+    double k = ((double)bbRct.GetHeight())/((double)bbRct.GetWidth());
 
     if(pos.x <= center.x)
     {
@@ -62,25 +62,6 @@ bool multiportBlock::Contains(const wxPoint& pos)
     }
     return false;
 }
-
-
-const std::vector<std::pair<wxRealPoint,wxRealPoint>> multiportBlock::getConnectioPoints()
-{
-    std::vector<std::pair<wxRealPoint,wxRealPoint>> inputconnectionpair;
-    size_t numberOfOutputs = wxAtoi(m_pInputsNumber->GetText());
-    size_t devider = numberOfOutputs +1;
-    wxRect shpBB = this->GetBoundingBox();
-    int height =  shpBB.GetTop() / devider;
-    for(size_t i = 0; i < devider; ++i)
-    {
-        wxRealPoint portpoint = (wxRealPoint(shpBB.GetLeft(), (height * i) + shpBB.GetHeight()/2));
-        wxRealPoint arrowpoint = (wxRealPoint(shpBB.GetLeft()-5, (height * i) + shpBB.GetHeight()/2));
-        inputconnectionpair.push_back(std::make_pair(portpoint,arrowpoint));
-    }
-    return inputconnectionpair;
-}
-
-
 void multiportBlock::setName(size_t number)
 {
    	m_pName = new wxSFEditTextShape();
@@ -213,8 +194,28 @@ void multiportBlock::Initialize()
 
 		SF_ADD_COMPONENT( m_pInputsNumber, wxT("Inputs"));
         m_pInputsNumber->SetText("1");
+        creatConnectionPoints();
     }
-
+}
+void multiportBlock::creatConnectionPoints()
+{
+    size_t outputs;
+    size_t inputs;
+    outputs = wxAtoi(m_pOutputsNumber->GetText());
+    inputs = wxAtoi(m_pInputsNumber->GetText());
+    wxRect shpBB = this->GetBoundingBox();
+    size_t outputs_devider = outputs+1;
+    size_t inputs_devider = inputs+1;
+    for(size_t i = 1; i < outputs_devider; ++i)
+    {
+        int height_outputs = 100 / outputs_devider;
+        wxSFShapeBase::AddConnectionPoint({100,height_outputs*i}, i, true);
+    }
+    for(size_t i = 1; i < inputs_devider; ++i)
+    {
+        int height_inputs = 100 / outputs_devider;
+        wxSFShapeBase::AddConnectionPoint({0,height_inputs*i}, i, true);
+    }
 }
 
 const wxString multiportBlock::getGain()

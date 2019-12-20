@@ -45,7 +45,7 @@ public:
     const wxString getBlockName();
     const wxString getNumberOfOutputPorts();
     const wxString getNumberOfInputPorts();
-    const std::vector<std::pair<wxRealPoint,wxRealPoint>> getConnectioPoints();
+    void creatConnectionPoints();
 private:
     wxSFEditTextShape *m_pName;
 

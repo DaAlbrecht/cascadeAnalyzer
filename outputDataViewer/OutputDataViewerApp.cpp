@@ -1,12 +1,3 @@
-/***************************************************************
- * Name:      OutputDataViewerApp.cpp
- * Purpose:   Code for Application Class
- * Author:    da ()
- * Created:   2019-07-02
- * Copyright: da ()
- * License:
- **************************************************************/
-
 #include "OutputDataViewerApp.h"
 
 //(*AppHeaders

@@ -13,8 +13,10 @@
 #include <boost/graph/depth_first_search.hpp>
 #include <boost/property_map/property_map.hpp>
 #include <boost/graph/connected_components.hpp>
+
 using namespace std;
 using namespace boost;
+
 class Block;
 class Connection;
 
@@ -23,41 +25,39 @@ struct BlockProperty
     Block *block_ptr;
 };
 
-typedef boost::adjacency_list< boost::vecS, boost::vecS, boost::bidirectionalS, BlockProperty> NetworkGraph;
+typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::bidirectionalS, BlockProperty> NetworkGraph;
 typedef std::vector<Block*> BlockArray;
 typedef std::vector<Connection*> ConnectionArray;
 typedef std::vector <boost::graph_traits<NetworkGraph>::vertex_descriptor> vertex_desc;
 
-bool ReadInputData( const char **argv,BlockArray &myBlockArray, ConnectionArray &myConnectionArray, NetworkGraph &g);
+bool ReadInputData(const std::string &filename, BlockArray &blockArray, ConnectionArray &connectionArray, NetworkGraph &g);
 
-bool parseBlockLine(const std::string &line, BlockArray &myBlockArray, ConnectionArray &myConnectionArray, NetworkGraph &g);
-void parseNetLine(const std::string &line, BlockArray &myBlockArray, ConnectionArray &myConnectionArray);
-void parseGainBlock(std::vector<std::string> &buf, BlockArray &myBlockArray, ConnectionArray &myConnectionArray, NetworkGraph &g);
-void parseMultiPortBlock(std::vector<std::string> &buf, BlockArray &myBlockArray, ConnectionArray &myConnectionArray, NetworkGraph &g);
+bool parseBlockLine(const std::string &line, BlockArray &blockArray, ConnectionArray &connectionArray, NetworkGraph &g);
+void parseNetLine(const std::string &line, BlockArray &blockArray, ConnectionArray &connectionArray);
+void parseGainBlock(std::vector<std::string> &buf, BlockArray &blockArray, ConnectionArray &connectionArray, NetworkGraph &g);
+void parseMultiPortBlock(std::vector<std::string> &buf, BlockArray &blockArray, ConnectionArray &connectionArray, NetworkGraph &g);
 
-bool drc_Parsing(BlockArray &myBlockArray, ConnectionArray &myConnectionArray);
-bool CheckIfNetsAreUnique(BlockArray &myBlockArray, ConnectionArray &myConnectionArray);
-bool CheckConnectionToMaxNumberOfDriverPorts(BlockArray &myBlockArray, ConnectionArray &myConnectionArray);
-bool CheckConnectionToMaxNumberOfReceiverPorts(BlockArray &myBlockArray, ConnectionArray &myConnectionArray);
-bool CheckifBlocksExists(BlockArray &myBlockArray);
-bool CheckifnetsExists(ConnectionArray &myConnectionArray);
+bool drcParsing(BlockArray &blockArray, ConnectionArray &connectionArray);
+bool CheckIfNetsAreUnique(BlockArray &blockArray, ConnectionArray &connectionArray);
+bool CheckConnectionToMaxNumberOfDriverPorts(BlockArray &blockArray, ConnectionArray &connectionArray);
+bool CheckConnectionToMaxNumberOfReceiverPorts(BlockArray &blockArray, ConnectionArray &connectionArray);
 
-void CreatGraph(const char **argv, BlockArray &myBlockArray, ConnectionArray &myConnectionArray, NetworkGraph &g);
+void CreateGraph(BlockArray &blockArray, ConnectionArray &connectionArray, NetworkGraph &g);
 bool GraphContainsNoCycles(NetworkGraph &g);
 bool Checkconnected_components(NetworkGraph &g);
-void GetSortedVertexDesctiptors(const char **argv, BlockArray &myBlockArray, NetworkGraph &g);
-void CalculateGain(BlockArray &myBlockArray, NetworkGraph &g, vertex_desc &vertexdescriptors_swap);
-void CalculateNoiseFigure(BlockArray &myBlockArray, NetworkGraph &g, vertex_desc &vertexdescriptors_swap);
+vertex_desc GetSortedVertexDesctiptors(BlockArray &blockArray, NetworkGraph &g); // name in domain; block vs vertex
+void CalculateGain(BlockArray &blockArray, NetworkGraph &g, vertex_desc &vertexdescriptors_swap);
+void CalculateNoiseFigure(BlockArray &blockArray, NetworkGraph &g, vertex_desc &vertexdescriptors_swap);
 
-bool drc_CreatGraph(NetworkGraph &g);
+bool drcGraph(NetworkGraph &g);
 
-void CreatOutputFile(const char **argv, BlockArray &myBlockArray, NetworkGraph &g, vertex_desc &vertexdescriptors_swap);
+void CreateOutputFile(const std::string &filename, BlockArray &blockArray, NetworkGraph &g, vertex_desc &vertexdescriptors_swap);
 
 class Connection
 {
 public:
-    Connection(std::string &nameDriver, uint8_t numberDriver,std::string &nameReceiver,uint8_t numberReceiver ):
-    nameDriver_ (nameDriver),numberDriver_(numberDriver),nameReceiver_(nameReceiver),numberReceiver_(numberReceiver){}
+    Connection(std::string &nameDriver, uint8_t numberDriver, std::string &nameReceiver, uint8_t numberReceiver):
+        nameDriver_(nameDriver), numberDriver_(numberDriver), nameReceiver_(nameReceiver), numberReceiver_(numberReceiver){}
 
     ~Connection(){}
     const std::string &getNameDriver()const{return nameDriver_;}
@@ -81,15 +81,14 @@ public:
     const std::string &getName()const{return name_;}
     virtual uint8_t getNumOfInputs()const = 0;
     virtual uint8_t getNumOfOutputs()const = 0;
-    virtual std::string getIdentity()const = 0;
     boost::graph_traits<NetworkGraph>::vertex_descriptor descriptor_;
 private:
     std::string name_;
     double totalgain_;
     double totalnf_;
 protected:
-    Block(const std::string &name):name_(name) {}
-    virtual ~Block() {}
+    Block(const std::string &name):name_(name){}
+    virtual ~Block(){}
 };
 
 class GainBlock: public Block
@@ -100,18 +99,17 @@ public:
         gain_(gain),
         nf_(nf)
     {}
-    virtual double getElementGain()const override
+    double getElementGain()const override
     {
         return gain_;
     }
-    virtual double getBlockNF()const override
+    double getBlockNF()const override
     {
         return nf_;
     }
 
-    virtual uint8_t getNumOfInputs()const override{return 1;}
-    virtual uint8_t getNumOfOutputs()const override{return 1;}
-    virtual std::string getIdentity()const override{return "GainBlock";}
+    uint8_t getNumOfInputs()const override{return 1;}
+    uint8_t getNumOfOutputs()const override{return 1;}
 private:
     double gain_;
     double nf_;
@@ -127,18 +125,17 @@ public:
         outputs_(outputs),
         inputs_(inputs)
     {}
-   virtual double getElementGain()const override
+    double getElementGain()const override
     {
         return gain_;
     }
-    virtual double getBlockNF()const override
+    double getBlockNF()const override
     {
         return nf_;
     }
 
-    virtual uint8_t getNumOfInputs()const override{ return outputs_;}
-    virtual uint8_t getNumOfOutputs()const override{ return inputs_;}
-    virtual std::string getIdentity()const override{return "MultiPortBlock";}
+    uint8_t getNumOfInputs()const override{ return outputs_;}
+    uint8_t getNumOfOutputs()const override{ return inputs_;}
 private:
     double gain_;
     double nf_;
@@ -153,6 +150,7 @@ std::vector <boost::graph_traits<NetworkGraph>::vertex_descriptor> vertexdescrip
 
 
 struct has_cycle { };
+
 struct cycle_detector : public default_dfs_visitor
 {
    void back_edge(edge_descriptor, const NetworkGraph &g)
@@ -160,6 +158,7 @@ struct cycle_detector : public default_dfs_visitor
         throw has_cycle();
    }
 };
+
 struct addvertex_iterator {};
 
 class getCorrectOrderOfDescriptors : public default_dfs_visitor
@@ -180,54 +179,62 @@ private:
 
 int main(int argc, const char** argv)
 {
-    if(argc < 3)
+    if(argc != 3)
     {
-        std::cerr  << "Usage:" << argv[0] << "\n" << "ERROR: input_data file or output_data file destination is missing" << "\n";
-        std::getchar();
+        std::cerr << "Usage:" << argv[0] << " <input file name> <output file name>";
         return -1;
     }
 
-    BlockArray myBlockArray;
-    ConnectionArray myConnectionArray;
+    BlockArray blockArray;
+    ConnectionArray connectionArray;
     NetworkGraph g;
 
-    if(!ReadInputData(argv,myBlockArray, myConnectionArray, g))
+    const string inpFilename = argv[1];
+    const string outFilename = argv[2];
+    if(!ReadInputData(argv[1], blockArray, connectionArray, g))
     {
-        std::cout << "erro parsing input file!\n";
-        std::getchar();
-        return -1;
+        std::cout << "error parsing input file!\n";
+        return -2;
     }
-    if(!drc_Parsing(myBlockArray, myConnectionArray))
+
+    if(!drcParsing(blockArray, connectionArray))
     {
         cout << "drc failed" << endl;
-        std::getchar();
-        return -1;
+        return -3;
     }
-    for(auto b : myBlockArray)
+
+    for(auto b : blockArray)
     {
-        if (b->getIdentity() == "GainBlock")
-            std::cout << "name: " << b->getName() << "\t" << " g = " << b->getElementGain() <<" \t"<< " NF = " << b->getBlockNF() <<"\n" ;
-        else if (b->getIdentity() == "MultiPortBlock")
-            std::cout << "name: " << b->getName() << "\t" << " outputs = " << std::to_string(b->getNumOfOutputs()) << " \t" << "inputs = " << std::to_string(b->getNumOfInputs()) <<"\n";
+        if(dynamic_cast<GainBlock*>(b))
+            std::cout << "name: " << b->getName() << "\tg = " << b->getElementGain() << "\t NF = " << b->getBlockNF() << "\n";
+        else if(dynamic_cast<MultiPortBlock*>(b))
+            std::cout << "name: " << b->getName() << "\toutputs = " << b->getNumOfOutputs() << "\t inputs = " << b->getNumOfInputs() << "\n";
     }
-    for(auto c : myConnectionArray)
+
+    for(auto c : connectionArray)
     {
        std::cout << "name driver:  " << c->getNameDriver() << "\t" <<"number driver " << std::to_string(c->getNumberDriver()) << "\n";
        std::cout << "name Receiver:" << c->getNameReceiver() << "\t" <<"number Receiver " << std::to_string(c->getNumberReceiver()) << "\n";
     }
 
-    CreatGraph(argv, myBlockArray, myConnectionArray, g);
-    if(!drc_CreatGraph(g))
+    CreateGraph(blockArray, connectionArray, g);
+
+    if(!drcGraph(g))
     {
-        cout << "drc CreatGraph failed" << endl;
-        std::getchar();
-        return -1;
+        cout << "drc Graph failed" << endl;
+        return -4;
     }
-    std::getchar();
+
+    vertex_desc vertexDesc = GetSortedVertexDesctiptors(blockArray, g); /// name?
+
+    CalculateGain(blockArray, g, vertexDesc);
+    CalculateNoiseFigure(blockArray, g, vertexDesc);
+    CreateOutputFile(outFilename, blockArray, g, vertexDesc);
+
     return 0;
 }
 
-bool ReadInputData(const char **argv,BlockArray &myBlockArray, ConnectionArray &myConnectionArray, NetworkGraph &g)
+bool ReadInputData(const std::string &filename, BlockArray &blockArray, ConnectionArray &connectionArray, NetworkGraph &g)
 {
     enum State
     {
@@ -236,12 +243,14 @@ bool ReadInputData(const char **argv,BlockArray &myBlockArray, ConnectionArray &
         Nets,
         End
     };
+
     std::ifstream myfile;
-    std::string line;
-    myfile.open(argv[1]);
-    State state = Header;
+    myfile.open(filename);
     if(!myfile.is_open())
         return false;
+
+    State state = Header;
+    std::string line;
     while(getline(myfile,line))
     {
         if(line.length() == 0 || line[0] == '#')
@@ -256,13 +265,13 @@ bool ReadInputData(const char **argv,BlockArray &myBlockArray, ConnectionArray &
             if(line == "-nets")
                 state = Nets;
             else
-                if (!parseBlockLine(line, myBlockArray, myConnectionArray, g)) return false;
+                if (!parseBlockLine(line, blockArray, connectionArray, g)) return false;
             break;
         case Nets:
             if(line == "-end")
                 state = End;
             else
-                parseNetLine(line, myBlockArray, myConnectionArray);
+                parseNetLine(line, blockArray, connectionArray);
             break;
         case End:
             break;
@@ -270,7 +279,8 @@ bool ReadInputData(const char **argv,BlockArray &myBlockArray, ConnectionArray &
     }
     return true;
 }
-bool parseBlockLine(const std::string &line, BlockArray &myBlockArray, ConnectionArray &myConnectionArray, NetworkGraph &g)
+
+bool parseBlockLine(const std::string &line, BlockArray &blockArray, ConnectionArray &connectionArray, NetworkGraph &g)
 {
     std::vector<std::string> buf;
     std::string text = line;
@@ -283,64 +293,41 @@ bool parseBlockLine(const std::string &line, BlockArray &myBlockArray, Connectio
     std::string component_type = buf[0];
     buf.erase(buf.begin());
     if(component_type == "G")
-        parseGainBlock(buf, myBlockArray, myConnectionArray, g);
+        parseGainBlock(buf, blockArray, connectionArray, g);
     else if(component_type == "S")
-        parseMultiPortBlock(buf, myBlockArray, myConnectionArray, g);
+        parseMultiPortBlock(buf, blockArray, connectionArray, g);
     return true;
 }
 
-void parseGainBlock(std::vector<std::string> &buf, BlockArray &myBlockArray, ConnectionArray &myConnectionArray, NetworkGraph &g)
+void parseGainBlock(std::vector<std::string> &buf, BlockArray &blockArray, ConnectionArray &connectionArray, NetworkGraph &g)
 {
-    std::string gain = boost::regex_replace(
-        buf[1],
-        boost::regex("[^0-9.]*([0-9.] )*"),
-        std::string("\\1")
-    );
+    std::string gain = boost::regex_replace(buf[1], boost::regex("[^0-9.]*([0-9.] )*"), std::string("\\1"));
+    std::string nf = boost::regex_replace(buf[2], boost::regex("[^0-9.]*([0-9.] )*"), std::string("\\1"));
 
-      std::string nf = boost::regex_replace(
-        buf[2],
-        boost::regex("[^0-9.]*([0-9.] )*"),
-        std::string("\\1")
-    );
-    if(nf.empty())
+    if(nf.empty()) nf = "0";
+
+    if(GainBlock *gb = new GainBlock(buf[0], std::stod(gain), std::stod(nf)))
     {
-       nf = "0";
+        blockArray.push_back(gb);
+        blockArray.back()->descriptor_ = boost::add_vertex(BlockProperty{gb}, g);
     }
-
-    GainBlock *gb = new GainBlock(buf[0],std::stod(gain),std::stod(nf));
-    myBlockArray.push_back(gb);
-    myBlockArray.back()->descriptor_ = boost::add_vertex(BlockProperty{gb}, g);
 }
-void parseMultiPortBlock(std::vector<std::string> &buf, BlockArray &myBlockArray, ConnectionArray &myConnectionArray, NetworkGraph &g)
+
+void parseMultiPortBlock(std::vector<std::string> &buf, BlockArray &blockArray, ConnectionArray &connectionArray, NetworkGraph &g)
 {
-    std::string gain = boost::regex_replace(
-        buf[1],
-        boost::regex("[^0-9.]*([0-9.] )*"),
-        std::string("\\1")
-    );
+    std::string gain = boost::regex_replace(buf[1], boost::regex("[^0-9.]*([0-9.] )*"), std::string("\\1"));
+    std::string nf = boost::regex_replace(buf[2], boost::regex("[^0-9.]*([0-9.] )*"), std::string("\\1"));
+    std::string outputs = boost::regex_replace(buf[3], boost::regex("[^0-9.]*([0-9.] )*"), std::string("\\1"));
+    std::string inputs = boost::regex_replace(buf[4], boost::regex("[^0-9.]*([0-9.] )*"), std::string("\\1"));
 
-      std::string nf = boost::regex_replace(
-        buf[2],
-        boost::regex("[^0-9.]*([0-9.] )*"),
-        std::string("\\1")
-    );
-      std::string outputs = boost::regex_replace(
-        buf[3],
-        boost::regex("[^0-9.]*([0-9.] )*"),
-        std::string("\\1")
-    );
-      std::string inputs = boost::regex_replace(
-        buf[4],
-        boost::regex("[^0-9.]*([0-9.] )*"),
-        std::string("\\1")
-    );
-
-    MultiPortBlock *mp = new MultiPortBlock(buf[0], std::stoi(gain), std::stoi(nf), std::stoi(outputs), std::stoi(inputs));
-    myBlockArray.push_back(mp);
-    myBlockArray.back()->descriptor_ = boost::add_vertex(BlockProperty{mp}, g);
+    if(MultiPortBlock *mp = new MultiPortBlock(buf[0], std::stoi(gain), std::stoi(nf), std::stoi(outputs), std::stoi(inputs)))
+    {
+        blockArray.push_back(mp);
+        blockArray.back()->descriptor_ = boost::add_vertex(BlockProperty{mp}, g);
+    }
 }
 
-void parseNetLine(const std::string &line, BlockArray &myBlockArray, ConnectionArray &myConnectionArray)
+void parseNetLine(const std::string &line, BlockArray &blockArray, ConnectionArray &connectionArray)
 {
     std::vector<std::string> tokens;
     std::string text = line;
@@ -350,44 +337,30 @@ void parseNetLine(const std::string &line, BlockArray &myBlockArray, ConnectionA
     {
         tokens.push_back(t);
     };
-    Connection *cn = new Connection(tokens[0], stoi(tokens[1]),tokens[2], stoi(tokens[3]));
-    myConnectionArray.push_back(cn);
-}
-bool CheckifBlocksExists(BlockArray &myBlockArray)
-{
-    if(myBlockArray.empty())
+
+    if(Connection *cn = new Connection(tokens[0], stoi(tokens[1]), tokens[2], stoi(tokens[3])))
     {
-        std::cout << "No existing Blocks" << "\n";
-        return false;
+        connectionArray.push_back(cn);
     }
-    return true;
 }
-bool CheckifnetsExists(ConnectionArray &myConnectionArray)
+
+bool drcParsing(BlockArray &blockArray, ConnectionArray &connectionArray)
 {
-    if(myConnectionArray.empty())
-    {
-        std::cout << "No existing Nets" << "\n";
+    if(blockArray.empty())
         return false;
-    }
-    return true;
-}
-bool drc_Parsing(BlockArray &myBlockArray, ConnectionArray &myConnectionArray)
-{
-    if(!CheckifBlocksExists(myBlockArray))
+    if(connectionArray.empty())
         return false;
-    if(!CheckifnetsExists(myConnectionArray))
+    if (!CheckConnectionToMaxNumberOfDriverPorts(blockArray, connectionArray))
         return false;
-    if (!CheckConnectionToMaxNumberOfDriverPorts(myBlockArray, myConnectionArray))
+    if (!CheckConnectionToMaxNumberOfReceiverPorts(blockArray, connectionArray))
         return false;
-    if (!CheckConnectionToMaxNumberOfReceiverPorts(myBlockArray, myConnectionArray))
-        return false;
-    if (!CheckIfNetsAreUnique(myBlockArray, myConnectionArray))
+    if (!CheckIfNetsAreUnique(blockArray, connectionArray))
         return false;
 
-    cout << "ok" << "\n";
     return true;
 }
-bool drc_CreatGraph(NetworkGraph &g)
+
+bool drcGraph(NetworkGraph &g)
 {
     if(!GraphContainsNoCycles(g))
         return false;
@@ -397,22 +370,23 @@ bool drc_CreatGraph(NetworkGraph &g)
     return true;
 }
 
-bool CheckIfNetsAreUnique(BlockArray &myBlockArray, ConnectionArray &myConnectionArray)
+//??? verify that each connection has one driver and one receiver
+bool CheckIfNetsAreUnique(BlockArray &blockArray, ConnectionArray &connectionArray)
 {
-    for (size_t i = 0; i < myConnectionArray.size()-1; ++i)
+    for (size_t cn1 = 0; cn1 < connectionArray.size()-1; ++cn1)
     {
-        for(size_t n = i+1; n < myConnectionArray.size(); ++n)
+        for(size_t cn2 = cn1+1; cn2 < connectionArray.size(); ++cn2)
         {
-            if((myConnectionArray.at(n)->getNameDriver() == myConnectionArray.at(i)->getNameDriver())
-            && ((myConnectionArray.at(n)->getNumberDriver() == myConnectionArray.at(i)->getNumberDriver())))
+            if((connectionArray.at(cn2)->getNameDriver() == connectionArray.at(cn1)->getNameDriver()) &&
+              ((connectionArray.at(cn2)->getNumberDriver() == connectionArray.at(cn1)->getNumberDriver())))
             {
-                cout << myConnectionArray.at(i)->getNameDriver() << "." << myConnectionArray.at(i)->getNumberDriver()  << " exists twice" << endl;
+                cout << connectionArray.at(cn1)->getNameDriver() << "." << connectionArray.at(cn1)->getNumberDriver()  << " exists twice" << endl;
                 return false;
             }
-            if((myConnectionArray.at(n)->getNameReceiver() == myConnectionArray.at(i)->getNameReceiver())
-            && ((myConnectionArray.at(n)->getNumberReceiver() == myConnectionArray.at(i)->getNumberReceiver())))
+            if((connectionArray.at(cn2)->getNameReceiver() == connectionArray.at(cn1)->getNameReceiver()) &&
+              ((connectionArray.at(cn2)->getNumberReceiver() == connectionArray.at(cn1)->getNumberReceiver())))
             {
-                cout << myConnectionArray.at(i)->getNameReceiver() <<"." << myConnectionArray.at(i)->getNumberReceiver() << " exists twice" << endl;
+                cout << connectionArray.at(cn1)->getNameReceiver() << "." << connectionArray.at(cn1)->getNumberReceiver() << " exists twice" << endl;
                 return false;
             }
         }
@@ -420,64 +394,61 @@ bool CheckIfNetsAreUnique(BlockArray &myBlockArray, ConnectionArray &myConnectio
     return true;
 }
 
-bool CheckConnectionToMaxNumberOfDriverPorts(BlockArray &myBlockArray, ConnectionArray &myConnectionArray)
+bool CheckConnectionToMaxNumberOfDriverPorts(BlockArray &blockArray, ConnectionArray &connectionArray)
 {
-    for (size_t i = 0; i < myConnectionArray.size(); ++i)
+    for (size_t i = 0; i < connectionArray.size(); ++i)
     {
-        auto predicate = [&](Block *pBlock){return pBlock->getName() == myConnectionArray.at(i)->getNameDriver();};
-        auto itr = std::find_if(myBlockArray.begin(), myBlockArray.end(), predicate);
-        if(itr == myBlockArray.end())
+        auto predicate = [&](Block *pBlock){return pBlock->getName() == connectionArray.at(i)->getNameDriver();};
+        auto itr = std::find_if(blockArray.begin(), blockArray.end(), predicate);
+        if(itr == blockArray.end())
             return false; // block does not exist
 
         Block *block = *itr;
-        if(block->getNumOfOutputs() < myConnectionArray.at(i)->getNumberDriver())
+        if(block->getNumOfOutputs() < connectionArray.at(i)->getNumberDriver())
         {
-            cout <<  block->getName() << " has too many outputs" << "\n";
+            cout <<  block->getName() << " has too many outputs\n"; /// ??? was ist genau falsch? "has connection to non existing out?"
             return false;
         }
     }
     return true;
 }
 
-bool CheckConnectionToMaxNumberOfReceiverPorts(BlockArray &myBlockArray, ConnectionArray &myConnectionArray)
+bool CheckConnectionToMaxNumberOfReceiverPorts(BlockArray &blockArray, ConnectionArray &connectionArray)
 {
-    for (size_t i = 0; i < myConnectionArray.size(); ++i)
+    for (size_t i = 0; i < connectionArray.size(); ++i)
     {
-        auto predicate = [&](Block *block){return block->getName() == myConnectionArray.at(i)->getNameReceiver();};
-        auto itr = std::find_if(myBlockArray.begin(), myBlockArray.end(), predicate);
-        if(itr == myBlockArray.end())
+        auto predicate = [&](Block *block){return block->getName() == connectionArray.at(i)->getNameReceiver();};
+        auto itr = std::find_if(blockArray.begin(), blockArray.end(), predicate);
+        if(itr == blockArray.end())
         {
             cout << "block does not exist" << "\n";
             return false; // block does not exist
         }
 
         Block *block = *itr;
-        if(block->getNumOfInputs() < myConnectionArray.at(i)->getNumberReceiver())
+        if(block->getNumOfInputs() < connectionArray.at(i)->getNumberReceiver())
         {
-            cout <<  block->getName() << " has too many inputs" << "\n";
+            cout <<  block->getName() << " has too many inputs\n"; /// ??? was ist genau falsch?
             return false;
         }
     }
     return true;
 }
 
-void CreatGraph(const char **argv, BlockArray &myBlockArray, ConnectionArray &myConnectionArray, NetworkGraph &g)
+void CreateGraph(BlockArray &blockArray, ConnectionArray &connectionArray, NetworkGraph &g)
 {
-    for (size_t i = 0; i< myConnectionArray.size(); ++i)
+    for (size_t i = 0; i< connectionArray.size(); ++i)
     {
-        auto predicateDriver = [&](Block *pBlock){return pBlock->getName() == myConnectionArray.at(i)->getNameDriver();};
-        auto itrDriver = std::find_if(myBlockArray.begin(), myBlockArray.end(), predicateDriver);
+        auto predicateDriver = [&](Block *pBlock){return pBlock->getName() == connectionArray.at(i)->getNameDriver();};
+        auto itrDriver = std::find_if(blockArray.begin(), blockArray.end(), predicateDriver);
         Block *block_Driver = *itrDriver;
 
-        auto predicateReceiver = [&](Block *block){return block->getName() == myConnectionArray.at(i)->getNameReceiver();};
-        auto itrReceiver = std::find_if(myBlockArray.begin(), myBlockArray.end(), predicateReceiver);
+        auto predicateReceiver = [&](Block *block){return block->getName() == connectionArray.at(i)->getNameReceiver();};
+        auto itrReceiver = std::find_if(blockArray.begin(), blockArray.end(), predicateReceiver);
         Block *block_receiver = *itrReceiver;
 
         boost::add_edge(block_Driver->descriptor_, block_receiver->descriptor_, g);
     }
-    Checkconnected_components(g);
-    GraphContainsNoCycles(g);
-    GetSortedVertexDesctiptors(argv, myBlockArray, g);
 }
 
 bool GraphContainsNoCycles(NetworkGraph &g)
@@ -494,142 +465,120 @@ bool GraphContainsNoCycles(NetworkGraph &g)
     }
     return true;
 }
-bool Checkconnected_components(NetworkGraph &g)
+
+bool Checkconnected_components(NetworkGraph &g) // name
 {
      std::vector<int> component (boost::num_vertices (g));
      size_t num_components = boost::connected_components(g, &component[0]);
      if(num_components != 1)
      {
-        cout << "vertex with no edge detected" << "\n";
+        cout << "vertex with no edge detected\n";/// unconnected blocks ???
         cout << num_components << "\n";
         return false;
      }
      return true;
 }
-void GetSortedVertexDesctiptors(const char **argv, BlockArray &myBlockArray, NetworkGraph &g)
+
+vertex_desc GetSortedVertexDesctiptors(BlockArray &blockArray, NetworkGraph &g)
 {
-    std::vector <boost::graph_traits<NetworkGraph>::vertex_descriptor> vertexdescriptors_swap;
-    std::vector <boost::graph_traits<NetworkGraph>::vertex_descriptor> vertexdescriptors;
+    vertex_desc vertexdescriptors_swap;
+    vertex_desc vertexdescriptors;
     getCorrectOrderOfDescriptors vis(vertexdescriptors);
     depth_first_search(g,visitor(vis));
-    for(size_t i = vertexdescriptors.size(); i>0; --i)
+    for(size_t i = vertexdescriptors.size() ; i>0 ; --i)
     {
         vertexdescriptors_swap.push_back(vertexdescriptors.at(i-1));
     }
-    CalculateGain(myBlockArray, g , vertexdescriptors_swap );
-    CalculateNoiseFigure(myBlockArray, g, vertexdescriptors_swap);
-    CreatOutputFile(argv, myBlockArray, g, vertexdescriptors_swap);
-
+    return vertexdescriptors_swap;
 }
-void CalculateGain(BlockArray &myBlockArray, NetworkGraph &g, vertex_desc &vertexdescriptors_swap)
+
+void CalculateGain(BlockArray &blockArray, NetworkGraph &g, vertex_desc &vertexDesc)
 {
     string nameoffirstvertex;
-    std::vector<double> Gain;
-    Gain.push_back(0);
-    for (size_t i = 0; i < vertexdescriptors_swap.size(); ++i)
+    double gain = 0.0;
+    for (size_t i = 0; i < vertexDesc.size(); ++i)
     {
-        auto desc = vertexdescriptors_swap.at(i);
+        auto desc = vertexDesc.at(i);
         Block *block = g[desc].block_ptr;
         if (i == 0)
             nameoffirstvertex = block->getName();
-        Gain.push_back(block->getElementGain()+ Gain.back());
-        block->getTotalGain() = Gain.back();
-        cout <<"total gain from " << nameoffirstvertex<< " to " << block->getName()<< "\t" << block->getTotalGain() << " dB" << "\n";
+        gain += block->getElementGain();
+        block->getTotalGain() = gain;
+        cout << "total gain from " << nameoffirstvertex << " to " << block->getName()<< "\t" << gain << " dB" << "\n";
     }
     return;
 }
 
-void CalculateNoiseFigure(BlockArray &myBlockArray, NetworkGraph &g,vertex_desc &vertexdescriptors_swap)
+void CalculateNoiseFigure(BlockArray &blockArray, NetworkGraph &g, vertex_desc &vertexDesc)
 {
-    string nameoffirstvertex;
-    std::vector<double> nf_linear;
-    std::vector<double> gain_linear ;
-    std::vector<double> nf;
-    for (size_t i = 0; i < vertexdescriptors_swap.size(); ++i)
+    string nameOfFirstVertex;
+    double total_nf;
+    double gain = 1.0;
+    for (size_t i = 0; i < vertexDesc.size(); ++i)
     {
-        auto desc = vertexdescriptors_swap.at(i);
+        auto desc = vertexDesc.at(i);
 
         Block *block = g[desc].block_ptr;
+        double nf_linear = pow(10, (block->getBlockNF() / 10));
         if (i == 0)
         {
-            nameoffirstvertex = block->getName();
-            nf_linear.push_back(pow(10, (block->getBlockNF() / 10)));
-            gain_linear.push_back(pow(10, (block->getElementGain() / 10)));
-            nf.push_back(10 * log10(nf_linear.back()));
+            nameOfFirstVertex = block->getName();
+            total_nf = nf_linear;
         }
         else
         {
-            nf_linear.push_back(pow(10, (block->getBlockNF() / 10)));
-            nf.push_back(10 * log10( pow(10, (nf.at(i -1) / 10)) + ((nf_linear.back() -1)/gain_linear.back())));
-            gain_linear.push_back( gain_linear.back() * (pow(10, (block->getElementGain() / 10))));
-
+            total_nf += (nf_linear-1)/gain;
         }
-        block->getTotalNF() = nf.back();
-        cout <<"total NF from " << nameoffirstvertex<< " to " << block->getName()<< "\t" << block->getTotalNF() << " dB" << "\n";
+        gain *= pow(10.0, (block->getElementGain() / 10.0));
+        block->getTotalNF() = pow(10.0, total_nf);
+        cout << "total NF from " << nameOfFirstVertex << " to " << block->getName() << "\t" << block->getTotalNF() << " dB\n";
     }
     return;
 }
 
-void CreatOutputFile(const char **argv, BlockArray &myBlockArray, NetworkGraph &g, vertex_desc &vertexdescriptors_swap)
+void CreateOutputFile(const std::string &filename, BlockArray &blockArray, NetworkGraph &g, vertex_desc &vertexDesc)
 {
-    std::ofstream outfile(argv[2]);
-    outfile <<"Name;";
-    for(size_t i = 0; i <  vertexdescriptors_swap.size(); ++i )
+    std::stringstream nameLine;
+    std::stringstream gainLine;         //converting to stringstream for auto floatingprecision grow
+    std::stringstream noisefigureLine;
+    std::stringstream totalGainLine;
+    std::stringstream totalNoisefigureLine;
+
+    nameLine <<"Name;";
+    gainLine << "Gain;";
+    noisefigureLine << "NF;";
+    totalGainLine << "Total Gain;";
+    totalNoisefigureLine << "Total NF;";
+
+    for(size_t i = 0; i < vertexDesc.size(); ++i)
     {
-        auto desc = vertexdescriptors_swap.at(i);
+        auto desc = vertexDesc.at(i);
         Block *block = g[desc].block_ptr;
-        if( i == vertexdescriptors_swap.size()-1)
-            outfile << block->getName()<<" ";
-        else
-            outfile << block->getName() << ";" <<" ";
+
+        nameLine << block->getName();
+        gainLine << block->getElementGain();
+        noisefigureLine << block->getBlockNF();
+        totalGainLine << block->getTotalGain();
+        totalNoisefigureLine << block->getTotalNF();
+
+        if(i != vertexDesc.size()-1)
+        {
+            nameLine << ";";
+            gainLine << ";";
+            noisefigureLine << ";";
+            totalGainLine << ";";
+            totalNoisefigureLine << ";";
+        }
     }
-    outfile << endl;
-    outfile <<"Gain;";
-    for(size_t i = 0; i <  vertexdescriptors_swap.size(); ++i )
-    {
-        auto desc = vertexdescriptors_swap.at(i);
-        Block *block = g[desc].block_ptr;
-        if( i == vertexdescriptors_swap.size()-1)
-            outfile << block->getElementGain()<<" ";
-        else
-            outfile << block->getElementGain() << ";" <<" ";
-    }
-    outfile << endl;
-    outfile <<"NF;";
-    for(size_t i = 0; i <  vertexdescriptors_swap.size(); ++i )
-    {
-        auto desc = vertexdescriptors_swap.at(i);
-        Block *block = g[desc].block_ptr;
-        if( i == vertexdescriptors_swap.size()-1)
-            outfile << block->getBlockNF()<<" ";
-        else
-            outfile << block->getBlockNF() << ";" <<" ";
-    }
-    outfile << endl;
-    outfile <<"Total Gain;";
-    for(size_t i = 0; i <  vertexdescriptors_swap.size() ; ++i )
-    {
-        auto desc = vertexdescriptors_swap.at(i);
-        Block *block = g[desc].block_ptr;
-        if( i == vertexdescriptors_swap.size()-1)
-            outfile << block->getTotalGain()<<" ";
-        else
-            outfile << block->getTotalGain() << ";" <<" ";
-    }
-    outfile << endl;
-    outfile <<"Total NF;";
-    for(size_t i = 0; i <  vertexdescriptors_swap.size(); ++i )
-    {
-        auto desc = vertexdescriptors_swap.at(i);
-        Block *block = g[desc].block_ptr;
-        if( i == vertexdescriptors_swap.size()-1)
-            outfile << block->getTotalNF()<<" ";
-        else
-            outfile << block->getTotalNF() << ";" <<" ";
-    }
+
+    std::ofstream outfile(filename);
+    outfile << nameLine.str() << endl;
+    outfile << gainLine.str() << endl;
+    outfile << noisefigureLine.str() << endl;
+    outfile << totalGainLine.str() << endl;
+    outfile << totalNoisefigureLine.str() << endl;
     outfile << endl;
     outfile.close();
-    if(std::remove(argv[1]) != 0)
-        std::cerr << "Error deleting file" << "\n";
+
     return;
 }

@@ -1,57 +1,23 @@
-/***************************************************************
- * Name:      OutputDataViewerMain.cpp
- * Purpose:   Code for Application Frame
- * Author:    da ()
- * Created:   2019-07-02
- * Copyright: da ()
- * License:
- **************************************************************/
-
 #include "OutputDataViewerMain.h"
 #include <wx/msgdlg.h>
+
 //(*InternalHeaders(OutputDataViewerFrame)
 #include <wx/intl.h>
 #include <wx/string.h>
 //*)
 
-//helper functions
-enum wxbuildinfoformat {
-    short_f, long_f };
-
-wxString wxbuildinfo(wxbuildinfoformat format)
-{
-    wxString wxbuild(wxVERSION_STRING);
-
-    if (format == long_f )
-    {
-#if defined(__WXMSW__)
-        wxbuild << _T("-Windows");
-#elif defined(__UNIX__)
-        wxbuild << _T("-Linux");
-#endif
-
-#if wxUSE_UNICODE
-        wxbuild << _T("-Unicode build");
-#else
-        wxbuild << _T("-ANSI build");
-#endif // wxUSE_UNICODE
-    }
-
-    return wxbuild;
-}
-
-    //(*IdInit(OutputDataViewerFrame)
-    const long OutputDataViewerFrame::idMenuQuit = wxNewId();
-    const long OutputDataViewerFrame::idMenuAbout = wxNewId();
-    const long OutputDataViewerFrame::ID_STATUSBAR1 = wxNewId();
-    //*)
+//(*IdInit(OutputDataViewerFrame)
+const long OutputDataViewerFrame::idMenuQuit = wxNewId();
+const long OutputDataViewerFrame::idMenuAbout = wxNewId();
+const long OutputDataViewerFrame::ID_STATUSBAR1 = wxNewId();
+//*)
 
 BEGIN_EVENT_TABLE(OutputDataViewerFrame,wxFrame)
     //(*EventTable(OutputDataViewerFrame)
     //*)
 END_EVENT_TABLE()
 
-OutputDataViewerFrame::OutputDataViewerFrame(wxWindow* parent,wxWindowID id)
+OutputDataViewerFrame::OutputDataViewerFrame(wxWindow* parent, wxWindowID id)
 {
     //(*Initialize(OutputDataViewerFrame)
     wxMenuItem* MenuItem2;
@@ -83,18 +49,18 @@ OutputDataViewerFrame::OutputDataViewerFrame(wxWindow* parent,wxWindowID id)
     //*)
 
     ListCtrl1 = new wxListCtrl(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLC_REPORT);
-    OutputDataViewerFrame::ParseCsvFile(parent, id, ListCtrl1);
+    ParseCsvFile();
 }
 
-void OutputDataViewerFrame::ParseCsvFile(wxWindow* &parent,wxWindowID &id, wxListCtrl*  &ListCtrl1)
+void OutputDataViewerFrame::ParseCsvFile()
 {
     std::vector<std::string> buf;
     std::ifstream csv;
     std::string line;
     uint8_t parsedlines = 0;
-    size_t bufoffset =0;
+    size_t bufoffset = 0;
 
-    csv.open("D:\\cascadeAnalyzer\\outputDataViewer\\outputdata.csv");
+    csv.open("D:\\cascadeAnalayzer\\outputDataViewer\\outputdata.csv"); /// ???
     if(!csv.is_open())
     {
         wxMessageBox("file doesn't exist");
@@ -102,7 +68,7 @@ void OutputDataViewerFrame::ParseCsvFile(wxWindow* &parent,wxWindowID &id, wxLis
     }
     else
     {
-        while(std::getline(csv,line))
+        while(std::getline(csv, line))
         {
             boost::char_separator<char> sep(";");
             boost::tokenizer< boost::char_separator<char> > tokens(line, sep);
@@ -110,14 +76,13 @@ void OutputDataViewerFrame::ParseCsvFile(wxWindow* &parent,wxWindowID &id, wxLis
             {
                 buf.push_back(t);
             }
-            OutputDataViewerFrame::CreatList( buf, parsedlines, bufoffset,  parent, id, ListCtrl1);
+            CreateList(buf, parsedlines, bufoffset);
             ++parsedlines;
         }
-
     }
-
 }
-void OutputDataViewerFrame::AutoSizeHeader(wxListCtrl *const &ListCtrl1, int &colsize)
+
+void OutputDataViewerFrame::AutoSizeHeader(int &colsize)
 {
     if(ListCtrl1)
     {
@@ -131,7 +96,8 @@ void OutputDataViewerFrame::AutoSizeHeader(wxListCtrl *const &ListCtrl1, int &co
         }
     }
 }
-void OutputDataViewerFrame::CreatList(std::vector<std::string> &buf, uint8_t &parsedlines, size_t &bufoffset, wxWindow* &parent, wxWindowID &id, wxListCtrl*  &ListCtrl1)
+
+void OutputDataViewerFrame::CreateList(std::vector<std::string> &buf, uint8_t &parsedlines, size_t &bufoffset)
 {
     wxListItem item;
     wxListItem col;
@@ -146,7 +112,7 @@ void OutputDataViewerFrame::CreatList(std::vector<std::string> &buf, uint8_t &pa
         ListCtrl1->InsertColumn(0, col);
         colsize = ListCtrl1->GetColumnWidth(0);
 
-        for( size_t i = 0; i < buf.size(); ++i )
+        for(size_t i = 0; i < buf.size(); ++i)
         {
             col.SetId(i);
             col.SetAlign(wxLIST_FORMAT_RIGHT);
@@ -154,7 +120,7 @@ void OutputDataViewerFrame::CreatList(std::vector<std::string> &buf, uint8_t &pa
             col.SetWidth(400);
             ListCtrl1->InsertColumn(i, col);
             ++bufoffset;
-            OutputDataViewerFrame::AutoSizeHeader(ListCtrl1, colsize);
+            AutoSizeHeader(colsize);
         }
     }
     else
@@ -162,7 +128,7 @@ void OutputDataViewerFrame::CreatList(std::vector<std::string> &buf, uint8_t &pa
         item.SetId(parsedlines-1);
         int colnr = 0;
         ListCtrl1->InsertItem(item);
-        for( size_t i = bufoffset; i < buf.size(); ++i )
+        for(size_t i = bufoffset; i < buf.size(); ++i)
         {
             ListCtrl1->SetItem(parsedlines-1, colnr, buf.at(i));
             ++colnr;
@@ -171,6 +137,7 @@ void OutputDataViewerFrame::CreatList(std::vector<std::string> &buf, uint8_t &pa
     }
 
 }
+
 OutputDataViewerFrame::~OutputDataViewerFrame()
 {
     //(*Destroy(OutputDataViewerFrame)
@@ -179,19 +146,10 @@ OutputDataViewerFrame::~OutputDataViewerFrame()
 
 void OutputDataViewerFrame::OnQuit(wxCommandEvent& event)
 {
-//    FILE * pFile;
-//    pFile = fopen ("D:\\cascadeAnalyzer\\outputDataViewer\\outputdata.csv","w");
-//    if (pFile!=NULL)
-//    {
-//        fclose (pFile);
-//        if(std::remove("D:\\cascadeAnalyzer\\outputDataViewer\\outputdata.csv") != 0)
-//            wxMessageBox("Error deleting file");
-//    }
     Close();
 }
 
 void OutputDataViewerFrame::OnAbout(wxCommandEvent& event)
 {
-    wxString msg = wxbuildinfo(long_f);
-    wxMessageBox(msg, _("Help "));
+    wxMessageBox(_("OutputDataViewerFrame"), _("Help "));
 }

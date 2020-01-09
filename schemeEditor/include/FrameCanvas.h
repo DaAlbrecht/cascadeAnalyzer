@@ -2,9 +2,9 @@
 #define _FRAMECANVAS_H
 
 #include "wx/wxsf/wxShapeFramework.h"
-#include "rf_cascade_Shapes/ConnectionLineShape.h"
-#include "rf_cascade_Shapes/gainblockShape.h"
-#include "rf_cascade_Shapes/MultiportBlockShape.h"
+#include "ConnectionLineShape.h"
+#include "gainblockShape.h"
+#include "MultiportBlockShape.h"
 class MainFrm;
 class FrameCanvas : public wxSFShapeCanvas
 {

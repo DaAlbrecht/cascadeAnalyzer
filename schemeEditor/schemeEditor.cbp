@@ -89,6 +89,7 @@
 			<Add directory="src" />
 			<Add directory="include" />
 			<Add directory="rf_cascade_Shapes" />
+			<Add directory="res" />
 		</Compiler>
 		<Unit filename="include/Art.h" />
 		<Unit filename="include/FrameCanvas.h" />

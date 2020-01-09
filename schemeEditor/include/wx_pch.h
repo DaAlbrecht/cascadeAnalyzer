@@ -1,12 +1,3 @@
-/***************************************************************
- * Name:      wx_pch.h
- * Purpose:   Header to create Pre-Compiled Header (PCH)
- * Author:    Michal Bližňák ()
- * Created:   2007-03-04
- * Copyright: Michal Bližňák ()
- * License:
- **************************************************************/
-
 #ifndef WX_PCH_H_INCLUDED
 #define WX_PCH_H_INCLUDED
 

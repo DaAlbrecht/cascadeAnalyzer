@@ -93,7 +93,7 @@ protected:
 	void OnAutoLayout(wxCommandEvent& event);
 
     void OnGenerateInputDataFile(wxCommandEvent& event);
-    void startCalculation(int &processReturnValue);
+    void startCalculation();
     void dataViewer();
 
     typedef std::vector<wxString>  vecString;

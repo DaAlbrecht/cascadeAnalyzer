@@ -28,7 +28,7 @@ struct BlockProperty
 typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::bidirectionalS, BlockProperty> NetworkGraph;
 typedef std::vector<Block*> BlockArray;
 typedef std::vector<Connection*> ConnectionArray;
-typedef std::vector <boost::graph_traits<NetworkGraph>::vertex_descriptor> vertex_desc;
+typedef std::vector <boost::graph_traits<NetworkGraph>::vertex_descriptor> block_desc;
 
 bool ReadInputData(const std::string &filename, BlockArray &blockArray, ConnectionArray &connectionArray, NetworkGraph &g);
 
@@ -38,20 +38,20 @@ void parseGainBlock(std::vector<std::string> &buf, BlockArray &blockArray, Conne
 void parseMultiPortBlock(std::vector<std::string> &buf, BlockArray &blockArray, ConnectionArray &connectionArray, NetworkGraph &g);
 
 bool drcParsing(BlockArray &blockArray, ConnectionArray &connectionArray);
-bool CheckIfNetsAreUnique(BlockArray &blockArray, ConnectionArray &connectionArray);
+bool NoDoubleUsedPorts(BlockArray &blockArray, ConnectionArray &connectionArray);
 bool CheckConnectionToMaxNumberOfDriverPorts(BlockArray &blockArray, ConnectionArray &connectionArray);
 bool CheckConnectionToMaxNumberOfReceiverPorts(BlockArray &blockArray, ConnectionArray &connectionArray);
 
 void CreateGraph(BlockArray &blockArray, ConnectionArray &connectionArray, NetworkGraph &g);
 bool GraphContainsNoCycles(NetworkGraph &g);
-bool Checkconnected_components(NetworkGraph &g);
-vertex_desc GetSortedVertexDesctiptors(BlockArray &blockArray, NetworkGraph &g); // name in domain; block vs vertex
-void CalculateGain(BlockArray &blockArray, NetworkGraph &g, vertex_desc &vertexdescriptors_swap);
-void CalculateNoiseFigure(BlockArray &blockArray, NetworkGraph &g, vertex_desc &vertexdescriptors_swap);
+bool AllBlocksAreConnected(NetworkGraph &g);
+block_desc GetSortedBlockDesctiptors(BlockArray &blockArray, NetworkGraph &g);
+void CalculateGain(BlockArray &blockArray, NetworkGraph &g, block_desc &vertexdescriptors_swap);
+void CalculateNoiseFigure(BlockArray &blockArray, NetworkGraph &g, block_desc &vertexdescriptors_swap);
 
 bool drcGraph(NetworkGraph &g);
 
-void CreateOutputFile(const std::string &filename, BlockArray &blockArray, NetworkGraph &g, vertex_desc &vertexdescriptors_swap);
+void CreateOutputFile(const std::string &filename, BlockArray &blockArray, NetworkGraph &g, block_desc &vertexdescriptors_swap);
 
 class Connection
 {
@@ -225,7 +225,7 @@ int main(int argc, const char** argv)
         return -4;
     }
 
-    vertex_desc vertexDesc = GetSortedVertexDesctiptors(blockArray, g); /// name?
+    block_desc vertexDesc = GetSortedBlockDesctiptors(blockArray, g);
 
     CalculateGain(blockArray, g, vertexDesc);
     CalculateNoiseFigure(blockArray, g, vertexDesc);
@@ -354,7 +354,7 @@ bool drcParsing(BlockArray &blockArray, ConnectionArray &connectionArray)
         return false;
     if (!CheckConnectionToMaxNumberOfReceiverPorts(blockArray, connectionArray))
         return false;
-    if (!CheckIfNetsAreUnique(blockArray, connectionArray))
+    if (!NoDoubleUsedPorts(blockArray, connectionArray))
         return false;
 
     return true;
@@ -364,14 +364,13 @@ bool drcGraph(NetworkGraph &g)
 {
     if(!GraphContainsNoCycles(g))
         return false;
-    if(!Checkconnected_components(g))
+    if(!AllBlocksAreConnected(g))
         return false;
 
     return true;
 }
 
-//??? verify that each connection has one driver and one receiver
-bool CheckIfNetsAreUnique(BlockArray &blockArray, ConnectionArray &connectionArray)
+bool NoDoubleUsedPorts(BlockArray &blockArray, ConnectionArray &connectionArray)
 {
     for (size_t cn1 = 0; cn1 < connectionArray.size()-1; ++cn1)
     {
@@ -406,7 +405,7 @@ bool CheckConnectionToMaxNumberOfDriverPorts(BlockArray &blockArray, ConnectionA
         Block *block = *itr;
         if(block->getNumOfOutputs() < connectionArray.at(i)->getNumberDriver())
         {
-            cout <<  block->getName() << " has too many outputs\n"; /// ??? was ist genau falsch? "has connection to non existing out?"
+            cout <<  block->getName() << " has more output connections than allowed\n";
             return false;
         }
     }
@@ -428,7 +427,7 @@ bool CheckConnectionToMaxNumberOfReceiverPorts(BlockArray &blockArray, Connectio
         Block *block = *itr;
         if(block->getNumOfInputs() < connectionArray.at(i)->getNumberReceiver())
         {
-            cout <<  block->getName() << " has too many inputs\n"; /// ??? was ist genau falsch?
+           cout <<  block->getName() << " has more input connections than allowed\n";
             return false;
         }
     }
@@ -466,23 +465,22 @@ bool GraphContainsNoCycles(NetworkGraph &g)
     return true;
 }
 
-bool Checkconnected_components(NetworkGraph &g) // name
+bool AllBlocksAreConnected(NetworkGraph &g)
 {
      std::vector<int> component (boost::num_vertices (g));
      size_t num_components = boost::connected_components(g, &component[0]);
      if(num_components != 1)
      {
-        cout << "vertex with no edge detected\n";/// unconnected blocks ???
-        cout << num_components << "\n";
+        cout << num_components << " unconnected blocks detected\n";
         return false;
      }
      return true;
 }
 
-vertex_desc GetSortedVertexDesctiptors(BlockArray &blockArray, NetworkGraph &g)
+block_desc GetSortedBlockDesctiptors(BlockArray &blockArray, NetworkGraph &g)
 {
-    vertex_desc vertexdescriptors_swap;
-    vertex_desc vertexdescriptors;
+    block_desc vertexdescriptors_swap;
+    block_desc vertexdescriptors;
     getCorrectOrderOfDescriptors vis(vertexdescriptors);
     depth_first_search(g,visitor(vis));
     for(size_t i = vertexdescriptors.size() ; i>0 ; --i)
@@ -492,7 +490,7 @@ vertex_desc GetSortedVertexDesctiptors(BlockArray &blockArray, NetworkGraph &g)
     return vertexdescriptors_swap;
 }
 
-void CalculateGain(BlockArray &blockArray, NetworkGraph &g, vertex_desc &vertexDesc)
+void CalculateGain(BlockArray &blockArray, NetworkGraph &g, block_desc &vertexDesc)
 {
     string nameoffirstvertex;
     double gain = 0.0;
@@ -509,7 +507,7 @@ void CalculateGain(BlockArray &blockArray, NetworkGraph &g, vertex_desc &vertexD
     return;
 }
 
-void CalculateNoiseFigure(BlockArray &blockArray, NetworkGraph &g, vertex_desc &vertexDesc)
+void CalculateNoiseFigure(BlockArray &blockArray, NetworkGraph &g, block_desc &vertexDesc)
 {
     string nameOfFirstVertex;
     double total_nf;
@@ -536,7 +534,7 @@ void CalculateNoiseFigure(BlockArray &blockArray, NetworkGraph &g, vertex_desc &
     return;
 }
 
-void CreateOutputFile(const std::string &filename, BlockArray &blockArray, NetworkGraph &g, vertex_desc &vertexDesc)
+void CreateOutputFile(const std::string &filename, BlockArray &blockArray, NetworkGraph &g, block_desc &vertexDesc)
 {
     std::stringstream nameLine;
     std::stringstream gainLine;         //converting to stringstream for auto floatingprecision grow

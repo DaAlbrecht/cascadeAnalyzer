@@ -25,13 +25,8 @@
 					<Add option="-DWIN32" />
 					<Add option="-D_WINDOWS" />
 					<Add option="-DNDEBUG" />
-					<Add directory="../../../wxShapeFramework_trunk/include" />
-					<Add directory="$(#WX.include)" />
-					<Add directory="$(#WX.lib)/gcc_dll/mswu" />
-					<Add directory="../../../wxShapeFramework_trunk/lib/gcc_dll" />
 				</Compiler>
 				<ResourceCompiler>
-					<Add directory="../../include" />
 					<Add directory="$(#WX.include)" />
 					<Add directory="$(#WX.lib)/gcc_dll/mswu" />
 				</ResourceCompiler>
@@ -41,11 +36,9 @@
 					<Add library="wxbase31u" />
 					<Add library="wxmsw31u_core" />
 					<Add library="wxbase31u_xml" />
-					<Add directory="bin/gcc" />
-					<Add directory="../../../wxShapeFramework_trunk/build" />
+					<Add directory="submodules/WxShapeFramework/build" />
 					<Add directory="$(#WX.lib)/gcc_dll" />
-					<Add directory="../../lib/gcc_dll" />
-					<Add directory="../../../wxShapeFramework_trunk/lib/gcc_dll" />
+					<Add directory="submodules/WxShapeFramework/lib/gcc_dll" />
 				</Linker>
 			</Target>
 			<Target title="Debug">
@@ -69,10 +62,6 @@
 					<Add option="-DDEBUG" />
 					<Add option="-D_DEBUG" />
 					<Add option="-D__WXDEBUG__" />
-					<Add directory="../../../wxShapeFramework_trunk/include" />
-					<Add directory="$(#WX.include)" />
-					<Add directory="$(#WX.lib)/gcc_dll/mswu" />
-					<Add directory="../../../wxShapeFramework_trunk/lib/gcc_dll" />
 				</Compiler>
 				<ResourceCompiler>
 					<Add directory="../../include" />
@@ -85,36 +74,42 @@
 					<Add library="wxmsw31u_core" />
 					<Add library="wxbase31u_xml" />
 					<Add directory="bin/gcc" />
-					<Add directory="../../../wxShapeFramework_trunk/build" />
+					<Add directory="submodules/WxShapeFramework/build" />
 					<Add directory="$(#WX.lib)/gcc_dll" />
 					<Add directory="../../lib/gcc_dll" />
-					<Add directory="../../../wxShapeFramework_trunk/lib/gcc_dll" />
+					<Add directory="submodules/WxShapeFramework/lib/gcc_dll" />
 				</Linker>
 			</Target>
 		</Build>
-		<Unit filename="Art.h" />
-		<Unit filename="FrameCanvas.cpp" />
-		<Unit filename="FrameCanvas.h" />
-		<Unit filename="GUI.cpp" />
-		<Unit filename="GUI.h" />
-		<Unit filename="Ids.h" />
-		<Unit filename="MainApp.cpp" />
-		<Unit filename="MainApp.h" />
-		<Unit filename="MainFrame.cpp" />
-		<Unit filename="MainFrame.h" />
+		<Compiler>
+			<Add directory="submodules/WxShapeFramework/include" />
+			<Add directory="$(#WX.include)" />
+			<Add directory="$(#WX.lib)/gcc_dll/mswu" />
+			<Add directory="submodules/WxShapeFramework/lib/gcc_dll" />
+			<Add directory="src" />
+			<Add directory="include" />
+			<Add directory="rf_cascade_Shapes" />
+		</Compiler>
+		<Unit filename="include/Art.h" />
+		<Unit filename="include/FrameCanvas.h" />
+		<Unit filename="include/GUI.h" />
+		<Unit filename="include/Ids.h" />
+		<Unit filename="include/MainApp.h" />
+		<Unit filename="include/MainFrame.h" />
+		<Unit filename="include/wx_pch.h" />
 		<Unit filename="rf_cascade_Shapes/ConnectionLineShape.cpp" />
 		<Unit filename="rf_cascade_Shapes/ConnectionLineShape.h" />
 		<Unit filename="rf_cascade_Shapes/MultiportBlockShape.cpp" />
 		<Unit filename="rf_cascade_Shapes/MultiportBlockShape.h" />
 		<Unit filename="rf_cascade_Shapes/gainblockShape.cpp" />
 		<Unit filename="rf_cascade_Shapes/gainblockShape.h" />
+		<Unit filename="src/FrameCanvas.cpp" />
+		<Unit filename="src/GUI.cpp" />
+		<Unit filename="src/MainApp.cpp" />
+		<Unit filename="src/MainFrame.cpp" />
+		<Unit filename="src/wx_pch.cpp" />
 		<Unit filename="wxSF.rc">
 			<Option compilerVar="WINDRES" />
-		</Unit>
-		<Unit filename="wx_pch.cpp" />
-		<Unit filename="wx_pch.h">
-			<Option compile="1" />
-			<Option weight="0" />
 		</Unit>
 		<Extensions>
 			<code_completion />

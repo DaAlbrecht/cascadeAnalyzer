@@ -24,9 +24,6 @@ BEGIN_EVENT_TABLE(MainFrm, wxFrame)
 	EVT_MENU(wxID_PREVIEW, MainFrm::OnPrintPreview)
 	EVT_MENU(wxID_PAGE_SETUP, MainFrm::OnPageSetup)
 	EVT_MENU(IDM_GENERATEDATAFILE, MainFrm::OnGenerateInputDataFile)
-//	EVT_MENU(IDM_ONDIRPICKER, MainFrm::OnDirPicker)
-
-    EVT_FILEPICKER_CHANGED(ID_DIRPICKER,  MainFrm::DirPickerEvent)
 
 	EVT_MENU_RANGE(IDM_AUTOLAYOUT_FIRST, IDM_AUTOLAYOUT_LAST, MainFrm::OnAutoLayout)
 	EVT_COMMAND_SCROLL(wxID_ZOOM_FIT, MainFrm::OnSlider)
@@ -82,8 +79,6 @@ MainFrm::MainFrm( wxWindow* parent ) : _MainFrm( parent )
 	m_pFileMenu->AppendSeparator();
     m_pFileMenu->Append(wxID_EXIT, wxT("E&xit\tAlt+X"), wxT("Close application"), wxITEM_NORMAL);
     m_pFileMenu->Append(IDM_GENERATEDATAFILE, _("generate output file\tCtrl+shift+G"), _("Open diagram from XML file"));
-//    m_pFileMenu->Append(IDM_ONDIRPICKER, _("Pick PATH"),_("set path for the calculator and outputviwer"));
-
 
 	m_pEditMenu->Append(wxID_UNDO, wxT("&Undo\tCtrl+Z"), wxT("Discard previous action"), wxITEM_NORMAL);
 	m_pEditMenu->Append(wxID_REDO, wxT("&Redo\tCtrl+Y"), wxT("Re-do previously discarded action"), wxITEM_NORMAL);
@@ -93,7 +88,6 @@ MainFrm::MainFrm( wxWindow* parent ) : _MainFrm( parent )
 	m_pEditMenu->Append(wxID_COPY, wxT("&Copy\tCtrl+C"), wxT("Copy shapes to the clipboard"), wxITEM_NORMAL);
 	m_pEditMenu->Append(wxID_CUT, wxT("Cu&t\tCtrl+X"), wxT("Cut shapes to the clipboard"), wxITEM_NORMAL);
 	m_pEditMenu->Append(wxID_PASTE, wxT("&Paste\tCtrl+V"), wxT("Paste shapes to the canvas"), wxITEM_NORMAL);
-
     m_pEditMenu->AppendSeparator();
 	m_pEditMenu->Append(IDT_GAINBLOCKSHP, wxT("&GainBlock\tCtrl+G"), wxT("GainBlock"), wxITEM_NORMAL);
 	m_pEditMenu->Append(IDT_MULTIPORTBLOCK, wxT("&MultiPortBlock\tCtrl+S"), wxT("MultiPortBlock"), wxITEM_NORMAL);
@@ -360,35 +354,7 @@ void MainFrm::OnExportToBMP(wxCommandEvent& WXUNUSED(event))
         m_pShapeCanvas->SaveCanvasToImage( dlg.GetPath(), type, sfWITH_BACKGROUND );
 	}
 }
-///maybe used in future?
-//void MainFrm::OnDirPicker(wxCommandEvent& event)
-//{
-//     wxPanel* panel = new wxPanel(this, wxID_ANY);
-//     wxDirPickerCtrl* dirPickerCtrl = new wxDirPickerCtrl(panel, ID_DIRPICKER,
-//                                        wxEmptyString, wxDirSelectorPromptStr,
-//                                        wxDefaultPosition, wxSize(350, wxDefaultCoord));
-//
-//    wxStaticText* staticText = new wxStaticText(panel, wxID_ANY, "Selected Path:");
-//    m_textCtrl = new wxTextCtrl(panel, wxID_ANY);
-//    wxBoxSizer* panelSizer = new wxBoxSizer(wxVERTICAL);
-//    panelSizer->Add(dirPickerCtrl, 0, wxEXPAND | wxALL, 5);
-//    panelSizer->AddSpacer(15);
-//    panelSizer->Add(staticText, 0, wxEXPAND | wxLEFT, 5);
-//    panelSizer->Add(m_textCtrl, 0, wxEXPAND | wxALL, 5);
-//    panel->SetSizer(panelSizer);
-//    wxBoxSizer* topSizer = new wxBoxSizer(wxHORIZONTAL);
-//    topSizer->Add(panel, 1, wxEXPAND);
-//    SetSizerAndFit(topSizer);
-//
-//}
 
-void MainFrm::DirPickerEvent(wxFileDirPickerEvent& event)
-{
- if (m_textCtrl)
-    {
-        m_textCtrl->SetValue(event.GetPath());
-    }
-}
 //----------------------------------------------------------------------------------//
 // tool events
 //----------------------------------------------------------------------------------//

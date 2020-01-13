@@ -7,7 +7,6 @@ enum APPIDS
     //---------------------------------------------------------------//
     IDM_SAVEASBITMAP = wxID_HIGHEST + 1,
     IDM_GENERATEDATAFILE,
-//    IDM_ONDIRPICKER,
 	IDM_AUTOLAYOUT_FIRST,
 	IDM_AUTOLAYOUT_LAST = IDM_AUTOLAYOUT_FIRST + 100,
     // tool IDs
@@ -27,8 +26,6 @@ enum APPIDS
     IDT_COLORPICKER,
     // other constrols
     //---------------------------------------------------------------//
-    ID_DIRPICKER
-
 };
 
 #endif // IDS_H_INCLUDED

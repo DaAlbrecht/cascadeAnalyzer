@@ -60,7 +60,7 @@ void OutputDataViewerFrame::ParseCsvFile()
     uint8_t parsedlines = 0;
     size_t bufoffset = 0;
 
-    csv.open("D:\\cascadeAnalayzer\\outputDataViewer\\outputdata.csv"); /// ???
+    csv.open("..\\outputDataViewer\\outputdata.csv");
     if(!csv.is_open())
     {
         wxMessageBox("file doesn't exist");

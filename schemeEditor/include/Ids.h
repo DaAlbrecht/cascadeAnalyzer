@@ -6,11 +6,13 @@ enum APPIDS
     // menu IDs
     //---------------------------------------------------------------//
     IDM_SAVEASBITMAP = wxID_HIGHEST + 1,
-
+    IDM_GENERATEDATAFILE,
+//    IDM_ONDIRPICKER,
+	IDM_AUTOLAYOUT_FIRST,
+	IDM_AUTOLAYOUT_LAST = IDM_AUTOLAYOUT_FIRST + 100,
     // tool IDs
     //---------------------------------------------------------------//
     IDT_FIRST_TOOLMARKER,
-
     IDT_GRID,
     IDT_SHADOW,
 	IDT_GC,
@@ -22,12 +24,11 @@ enum APPIDS
     IDT_FLEXGRIDSHP,
 	IDT_ORTHOSHP,
     IDT_LAST_TOOLMARKER,
-	IDM_AUTOLAYOUT_FIRST,
-	IDM_AUTOLAYOUT_LAST = IDM_AUTOLAYOUT_FIRST + 100,
-
+    IDT_COLORPICKER,
     // other constrols
     //---------------------------------------------------------------//
-    IDT_COLORPICKER
+    ID_DIRPICKER
+
 };
 
 #endif // IDS_H_INCLUDED

@@ -8,7 +8,6 @@
 #include <tchar.h>
 #include "GUI.h"
 #include "FrameCanvas.h"
-
 // wx backward compatibility hack...
 #ifndef wxSAVE
 #define wxSAVE wxFD_SAVE
@@ -63,7 +62,6 @@ protected:
 
 	wxSFDiagramManager m_DiagramManager;
 	wxSFAutoLayout m_AutoLayout;
-
 	bool m_fShowGrid;
 	MODE m_nToolMode;
 

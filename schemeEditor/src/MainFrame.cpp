@@ -23,13 +23,16 @@ BEGIN_EVENT_TABLE(MainFrm, wxFrame)
 	EVT_MENU(wxID_PRINT, MainFrm::OnPrint)
 	EVT_MENU(wxID_PREVIEW, MainFrm::OnPrintPreview)
 	EVT_MENU(wxID_PAGE_SETUP, MainFrm::OnPageSetup)
+	EVT_MENU(IDM_GENERATEDATAFILE, MainFrm::OnGenerateInputDataFile)
+//	EVT_MENU(IDM_ONDIRPICKER, MainFrm::OnDirPicker)
 
-	EVT_MENU(wxID_GENERATEDATAFILE, MainFrm::OnGenerateInputDataFile)
+    EVT_FILEPICKER_CHANGED(ID_DIRPICKER,  MainFrm::DirPickerEvent)
 
 	EVT_MENU_RANGE(IDM_AUTOLAYOUT_FIRST, IDM_AUTOLAYOUT_LAST, MainFrm::OnAutoLayout)
 	EVT_COMMAND_SCROLL(wxID_ZOOM_FIT, MainFrm::OnSlider)
 	EVT_TOOL_RANGE(IDT_FIRST_TOOLMARKER, IDT_LAST_TOOLMARKER, MainFrm::OnTool)
 	EVT_COLOURPICKER_CHANGED(IDT_COLORPICKER, MainFrm::OnHowerColor)
+
 	EVT_UPDATE_UI(wxID_COPY, MainFrm::OnUpdateCopy)
 	EVT_UPDATE_UI(wxID_CUT, MainFrm::OnUpdateCut)
 	EVT_UPDATE_UI(wxID_PASTE, MainFrm::OnUpdatePaste)
@@ -37,6 +40,7 @@ BEGIN_EVENT_TABLE(MainFrm, wxFrame)
 	EVT_UPDATE_UI(wxID_REDO, MainFrm::OnUpdateRedo)
 	EVT_UPDATE_UI_RANGE(IDT_FIRST_TOOLMARKER, IDT_LAST_TOOLMARKER, MainFrm::OnUpdateTool)
 	EVT_UPDATE_UI_RANGE(IDM_AUTOLAYOUT_FIRST, IDM_AUTOLAYOUT_LAST, MainFrm::OnUpdateAutoLayout)
+
 	EVT_IDLE(MainFrm::OnIdle)
 END_EVENT_TABLE()
 
@@ -77,7 +81,8 @@ MainFrm::MainFrm( wxWindow* parent ) : _MainFrm( parent )
 	m_pFileMenu->Append(wxID_PAGE_SETUP, wxT("Pa&ge setup..."), wxT("Set print page properties"), wxITEM_NORMAL);
 	m_pFileMenu->AppendSeparator();
     m_pFileMenu->Append(wxID_EXIT, wxT("E&xit\tAlt+X"), wxT("Close application"), wxITEM_NORMAL);
-    m_pFileMenu->Append(wxID_GENERATEDATAFILE, _("generate output file\tCtrl+shift+G"), _("Open diagram from XML file"));
+    m_pFileMenu->Append(IDM_GENERATEDATAFILE, _("generate output file\tCtrl+shift+G"), _("Open diagram from XML file"));
+//    m_pFileMenu->Append(IDM_ONDIRPICKER, _("Pick PATH"),_("set path for the calculator and outputviwer"));
 
 
 	m_pEditMenu->Append(wxID_UNDO, wxT("&Undo\tCtrl+Z"), wxT("Discard previous action"), wxITEM_NORMAL);
@@ -221,6 +226,35 @@ void MainFrm::OnLoad(wxCommandEvent& WXUNUSED(event))
 
 		cpicker->SetColour(m_pShapeCanvas->GetHoverColour());
 	}
+
+    size_t numberMultiportBlock = 0;
+    size_t numberGainBlock = 0;
+    ShapeList lstShapes;
+    m_DiagramManager.GetShapes(sfANY, lstShapes, xsSerializable::searchBFS);
+    wxSFShapeBase *pChild;
+    if(!lstShapes.IsEmpty())
+    {
+        ShapeList::compatibility_iterator node = lstShapes.GetFirst();
+        while(node)
+        {
+            pChild = node->GetData();
+            multiportBlock *pmultiportBlock = dynamic_cast<multiportBlock *>(pChild);
+            if(pmultiportBlock)
+            {
+                pmultiportBlock->setName(numberMultiportBlock);
+                ++numberMultiportBlock;
+
+            }
+            gainBlock *pGainBlock = dynamic_cast<gainBlock *>(pChild);
+            if(pGainBlock)
+            {
+                pGainBlock->setName(numberGainBlock);
+                ++numberGainBlock;
+
+            }
+            node = node->GetNext();
+        }
+    }
 }
 
 void MainFrm::OnSave(wxCommandEvent& WXUNUSED(event))
@@ -326,7 +360,35 @@ void MainFrm::OnExportToBMP(wxCommandEvent& WXUNUSED(event))
         m_pShapeCanvas->SaveCanvasToImage( dlg.GetPath(), type, sfWITH_BACKGROUND );
 	}
 }
+///maybe used in future?
+//void MainFrm::OnDirPicker(wxCommandEvent& event)
+//{
+//     wxPanel* panel = new wxPanel(this, wxID_ANY);
+//     wxDirPickerCtrl* dirPickerCtrl = new wxDirPickerCtrl(panel, ID_DIRPICKER,
+//                                        wxEmptyString, wxDirSelectorPromptStr,
+//                                        wxDefaultPosition, wxSize(350, wxDefaultCoord));
+//
+//    wxStaticText* staticText = new wxStaticText(panel, wxID_ANY, "Selected Path:");
+//    m_textCtrl = new wxTextCtrl(panel, wxID_ANY);
+//    wxBoxSizer* panelSizer = new wxBoxSizer(wxVERTICAL);
+//    panelSizer->Add(dirPickerCtrl, 0, wxEXPAND | wxALL, 5);
+//    panelSizer->AddSpacer(15);
+//    panelSizer->Add(staticText, 0, wxEXPAND | wxLEFT, 5);
+//    panelSizer->Add(m_textCtrl, 0, wxEXPAND | wxALL, 5);
+//    panel->SetSizer(panelSizer);
+//    wxBoxSizer* topSizer = new wxBoxSizer(wxHORIZONTAL);
+//    topSizer->Add(panel, 1, wxEXPAND);
+//    SetSizerAndFit(topSizer);
+//
+//}
 
+void MainFrm::DirPickerEvent(wxFileDirPickerEvent& event)
+{
+ if (m_textCtrl)
+    {
+        m_textCtrl->SetValue(event.GetPath());
+    }
+}
 //----------------------------------------------------------------------------------//
 // tool events
 //----------------------------------------------------------------------------------//
@@ -483,7 +545,6 @@ void MainFrm::OnIdle(wxIdleEvent& event)
 }
 void MainFrm::OnGenerateInputDataFile(wxCommandEvent& event)
 {
-    int processReturnValue;
     std::vector<wxString> BlockType;
     std::vector<wxString> BlockName;
     std::vector<wxString> Gain;
@@ -493,7 +554,7 @@ void MainFrm::OnGenerateInputDataFile(wxCommandEvent& event)
     std::vector<wxString> NumberOfOutPorts;
     std::vector<wxString> NumberOfInPorts;
 
-    std::ofstream outfile ("D:\\cascadeAnalyzer\\calculateData\\input_data.txt");
+    std::ofstream outfile ("..\\calculateData\\input_data.txt");
     outfile << "-block" << "\n";
 
     getBlockData(BlockType, BlockName, Gain, NF, InputName, OutputName, NumberOfOutPorts, NumberOfInPorts);
@@ -515,11 +576,7 @@ void MainFrm::OnGenerateInputDataFile(wxCommandEvent& event)
         outfile << OutputName.at(i) << "\t" << InputName.at(i) << "\n";
     }
     wxMessageBox("file successfully generated");
-    startCalculation(processReturnValue);
-    if(processReturnValue == 0)
-    {
-        dataViewer();
-    }
+    startCalculation();
     dataViewer();
 }
 
@@ -568,6 +625,7 @@ void MainFrm::getBlockData(vecString &BlockType, vecString &BlockName, vecString
 
 void MainFrm::getNetData(std::vector<wxSFShapeBase*> &shapeArray, vecString &InputName, vecString &OutputName)
 {
+    std::vector<wxSFShapeBase*> trgShapes;
     for(size_t i = 0; i < shapeArray.size(); ++i)
     {
         ShapeList connections;
@@ -578,61 +636,51 @@ void MainFrm::getNetData(std::vector<wxSFShapeBase*> &shapeArray, vecString &Inp
             ShapeList::compatibility_iterator connection = connections.GetFirst();
             wxString inputportnumber;
             wxString outoutportnumber;
-            size_t inputportcounter = 1;
-            size_t outputportcounter = 1;
-            //size_t outPort = 0;
+            size_t outPort = 0;
             while(connection)
             {
                 wxSFShapeBase *pLine = connection->GetData();
-                //++outPort;
+                ++outPort;
                 if(wxSFLineShape *pLineShape = dynamic_cast<wxSFLineShape *>(pLine))
                 {
                     if(gainBlock *pGainBlock = dynamic_cast<gainBlock *>(sourceBlock))
-                        OutputName.push_back(pGainBlock->getBlockName() + "." + std::to_string(outputportcounter));
+                        OutputName.push_back(pGainBlock->getBlockName() + "." + std::to_string(outPort));
                     else if( multiportBlock *pmultiportBlock = dynamic_cast<multiportBlock *>(sourceBlock))
-                        OutputName.push_back(pmultiportBlock->getBlockName() + "." + std::to_string(outputportcounter));
+                        OutputName.push_back(pmultiportBlock->getBlockName() + "." + std::to_string(outPort));
                     for(size_t n = 0; n < shapeArray.size(); ++n)
                     {
+                        size_t inputportcounter = 1;
                         if (shapeArray.at(n)->GetId() == pLineShape->GetTrgShapeId())
                         {
-                            ///TODO (DAL) here we need to check for the correct output port number
                             gainBlock *pGainBlock = dynamic_cast<gainBlock *>(shapeArray.at(n));
                             multiportBlock *pmultiportBlock = dynamic_cast<multiportBlock *>(shapeArray.at(n));
-                            if(i > 1)
-                            {
-//                                inputportcounter += std::count_if(shapeArray.begin(),shapeArray.end(),[&](wxSFShapeBase*)
-//                                {return shapeArray.at(i-1)->GetId() == shapeArray.at(n)->GetId();});
-                            }
                             if(pGainBlock)
+                            {
                                 InputName.push_back(pGainBlock->getBlockName() + "." + std::to_string(inputportcounter));
+                            }
                             else if (pmultiportBlock)
                                 InputName.push_back(pmultiportBlock->getBlockName() + "." + std::to_string(inputportcounter));
                         }
                     }
-                    connection = connection->GetNext();
                 }
+                connection = connection->GetNext();
             }
         }
     }
 }
-void MainFrm::startCalculation(int &processReturnValue)
+void MainFrm::startCalculation()
 {
-    processReturnValue = wxExecute("D:\\cascadeAnalyzer\\calculateData\\bin\\Release\\Rf_Cascade_Analyzer.exe D:\\cascadeAnalyzer\\calculateData\\input_data.txt D:\\cascadeAnalyzer\\outputDataViewer\\outputdata.csv",
-           wxEXEC_NODISABLE,
-           NULL,
-           NULL
+     wxExecute("..\\calculateData\\bin\\Release\\Rf_Cascade_Analyzer.exe ..\\calculateData\\input_data.txt ..\\outputDataViewer\\outputdata.csv",
+           0,
+           0
            );
-            ///TODO(DAL) check DRC if DRC is oke ->
-
 }
 
 void MainFrm::dataViewer()
 {
-    wxExecute("D:\\cascadeAnalyzer\\outputDataViewer\\bin\\Release\\OutputDataViewer.exe",
-           wxEXEC_NODISABLE ,
-           NULL,
-           NULL
+    wxExecute("..\\outputDataViewer\\bin\\Release\\OutputDataViewer.exe",
+           0,
+           0
            );
-
 }
 

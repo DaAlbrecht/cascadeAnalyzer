@@ -191,19 +191,27 @@ int main(int argc, const char** argv)
 
     const string inpFilename = argv[1];
     const string outFilename = argv[2];
+
+    ///-----------------------------------------------------------
+    std::ofstream debugFile("debug.txt");
+    debugFile << "Debug File \n";
+    debugFile << inpFilename << "\n";
+    debugFile << outFilename << "\n";
     if(!ReadInputData(argv[1], blockArray, connectionArray, g))
     {
         std::cout << "error parsing input file!\n";
+        debugFile << "error parsing input file!\n";
         return -2;
     }
 
     if(!drcParsing(blockArray, connectionArray))
     {
         cout << "drc failed" << endl;
+        debugFile << "drc failed" << endl;
         return -3;
     }
 
-    for(auto b : blockArray)
+    for(const auto& b : blockArray)
     {
         if(dynamic_cast<GainBlock*>(b))
             std::cout << "name: " << b->getName() << "\tg = " << b->getElementGain() << "\t NF = " << b->getBlockNF() << "\n";
@@ -211,7 +219,7 @@ int main(int argc, const char** argv)
             std::cout << "name: " << b->getName() << "\toutputs = " << b->getNumOfOutputs() << "\t inputs = " << b->getNumOfInputs() << "\n";
     }
 
-    for(auto c : connectionArray)
+    for(const auto& c : connectionArray)
     {
        std::cout << "name driver:  " << c->getNameDriver() << "\t" <<"number driver " << std::to_string(c->getNumberDriver()) << "\n";
        std::cout << "name Receiver:" << c->getNameReceiver() << "\t" <<"number Receiver " << std::to_string(c->getNumberReceiver()) << "\n";
@@ -222,14 +230,18 @@ int main(int argc, const char** argv)
     if(!drcGraph(g))
     {
         cout << "drc Graph failed" << endl;
+        debugFile << "drc Graph failed" << endl;
         return -4;
     }
 
     block_desc vertexDesc = GetSortedBlockDesctiptors(blockArray, g);
 
     CalculateGain(blockArray, g, vertexDesc);
+    debugFile << "gain calculated\n";
     CalculateNoiseFigure(blockArray, g, vertexDesc);
+    debugFile << "nf calculated\n";
     CreateOutputFile(outFilename, blockArray, g, vertexDesc);
+    debugFile << "outfile created\n";
 
     return 0;
 }
@@ -433,6 +445,7 @@ bool CheckConnectionToMaxNumberOfReceiverPorts(BlockArray &blockArray, Connectio
     }
     return true;
 }
+
 
 void CreateGraph(BlockArray &blockArray, ConnectionArray &connectionArray, NetworkGraph &g)
 {

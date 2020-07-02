@@ -178,7 +178,6 @@ void FrameCanvas::OnLeftDown(wxMouseEvent& event)
             if(GetMode() == modeREADY)
             {
                 StartInteractiveConnection(CLASSINFO(ConnectionLineShape), event.GetPosition());
-//                m_pParentFrame->SetToolMode(MainFrm::modeDESIGN);
             }
             else
                 wxSFShapeCanvas::OnLeftDown(event);
@@ -214,53 +213,54 @@ wxSFShapeCanvas::PRECONNECTIONFINISHEDSTATE FrameCanvas::OnPreConnectionFinished
 {
      if(connection)
      {
-        std::vector<wxRealPoint> srcDokArray;
-        wxSFShapeBase *pbase;
-        ShapeList connections;
-        pbase = GetDiagramManager()->FindShape(connection->GetSrcShapeId());
-        pbase->GetAssignedConnections(CLASSINFO(wxSFOrthoLineShape), wxSFShapeBase::lineSTARTING, connections);
-        if(!connections.IsEmpty())
+         ShapeList lstShapes;
+         GetDiagramManager()->GetShapes(sfANY, lstShapes, xsSerializable::searchBFS);
+         wxSFShapeBase *pChild;
+        if(!lstShapes.IsEmpty())
         {
-            ShapeList::compatibility_iterator connections_itr = connections.GetFirst();
-            ConnectionPointList m_lstConnectionPts;
-            std::vector<wxRealPoint> TrgDokArray;
-            std::vector<wxRealPoint> SrcDokArray;
-            while(connections_itr)
+            std::vector<wxRealPoint> trgPoints;
+            std::vector<wxRealPoint> srcPoints;
+            ShapeList::compatibility_iterator node = lstShapes.GetFirst();
+            while(node)
             {
-                wxSFShapeBase *pLine = connections_itr->GetData();
-                if(wxSFLineShape *pLineShape = dynamic_cast<wxSFLineShape *>(pLine))
+                ShapeList shapes;
+                pChild = node->GetData();
+                pChild->GetAssignedConnections(CLASSINFO(wxSFOrthoLineShape), wxSFShapeBase::lineSTARTING, shapes);
+                if(!shapes.IsEmpty())
                 {
-                    TrgDokArray.push_back(pLineShape->GetTrgPoint());
-                    wxMessageBox(std::to_string(pLineShape->GetTrgPoint().x));
-                    wxMessageBox(std::to_string(TrgDokArray.size()));
-                    for(size_t i = 0; i < TrgDokArray.size()-1; ++i)
+                    ShapeList::compatibility_iterator connections_itr = shapes.GetFirst();
+                    while(connections_itr)
                     {
-                        int inputportcounter = 0;
-                        inputportcounter = std::count_if(TrgDokArray.begin(),TrgDokArray.end(),[&](wxRealPoint)
-                            {return TrgDokArray.at(i) == TrgDokArray.back();});
-                        if(inputportcounter > 1)
+                        wxSFShapeBase *pBaseShape = connections_itr->GetData();
+                        if(wx SFLineShape *pLineShape = dynamic_cast<wxSFLineShape *>(pBaseShape))
                         {
-                            wxMessageBox("port already used");
-                            return wxSFShapeCanvas::pfsFAILED_AND_CANCEL_LINE;
+                            trgPoints.push_back(pLineShape->GetTrgPoint());
+                            srcPoints.push_back(pLineShape->GetSrcPoint());
+                            for(size_t i = 0; i < trgPoints.size()-1; ++i)
+                            {
+                                gainBlock gn;
+                                if(gainBlock::OUTPUT == gn.findConnectionPoint(trgPoints.back()))
+                                {
+                                    wxMessageBox("this is an output");
+                                }
+                                if((trgPoints.back() == trgPoints.at(i)) || (srcPoints.back() == srcPoints.at(i)))
+                                {
+                                    wxMessageBox("port already used");
+                                    return wxSFShapeCanvas::pfsFAILED_AND_CANCEL_LINE;
+                                }
+
+                                if(trgPoints.back() == srcPoints.at(i) || trgPoints.at(i) == srcPoints.back())
+                                {
+                                    wxMessageBox("port already used");
+                                    return wxSFShapeCanvas::pfsFAILED_AND_CANCEL_LINE;
+                                }
+                            }
                         }
-                    }
-                    SrcDokArray.push_back(pLineShape->GetSrcPoint());
-                    for(size_t i = 0; i < SrcDokArray.size()-1; ++i)
-                    {
-                        int outputport = 0;
-                        outputport = std::count_if(SrcDokArray.begin(),SrcDokArray.end(),[&](wxRealPoint)
-                            {return SrcDokArray.at(i) == SrcDokArray.back();});
-                        if(outputport > 1)
-                        {
-                            wxMessageBox("port already used");
-                            return wxSFShapeCanvas::pfsFAILED_AND_CANCEL_LINE;
-                        }
+                        connections_itr = connections_itr->GetNext();
                     }
                 }
-                connections_itr = connections_itr->GetNext();
+                node = node->GetNext();
             }
-            TrgDokArray.clear();
-            SrcDokArray.clear();
         }
     }
     return wxSFShapeCanvas::pfsOK;
@@ -276,7 +276,6 @@ void FrameCanvas::OnConnectionFinished(wxSFLineShape* connection)
 		connection->AcceptConnection(wxT("All"));
         connection->AcceptSrcNeighbour(wxT("All"));
         connection->AcceptTrgNeighbour(wxT("All"));
-//		connection->SetDockPoint(sfdvLINESHAPE_DOCKPOINT_CENTER);
     }
 }
 void FrameCanvas::OnMouseWheel(wxMouseEvent& event)
@@ -294,5 +293,12 @@ void FrameCanvas::OnTextChanged(wxSFShapeTextEvent& event)
     if(pText)
     {
 		pText->Update();
+
     }
+    wxSFShapeBase* pbase = (wxSFShapeBase*)event.GetShape();
+    if(multiportBlock *pmultiportBlock = dynamic_cast<multiportBlock *>(pbase->GetParent()))
+    {
+            pmultiportBlock->creatConnectionPoints();
+    }
+
 }

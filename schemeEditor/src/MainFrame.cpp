@@ -541,6 +541,7 @@ void MainFrm::OnGenerateInputDataFile(wxCommandEvent& event)
     {
         outfile << OutputName.at(i) << "\t" << InputName.at(i) << "\n";
     }
+    outfile.close();
     wxMessageBox("file successfully generated");
     startCalculation();
     dataViewer();
@@ -624,7 +625,7 @@ void MainFrm::getNetData(std::vector<wxSFShapeBase*> &shapeArray, vecString &Inp
                             {
                                 InputName.push_back(pGainBlock->getBlockName() + "." + std::to_string(inputportcounter));
                             }
-                            else if (pmultiportBlock)
+                            else if(pmultiportBlock)
                                 InputName.push_back(pmultiportBlock->getBlockName() + "." + std::to_string(inputportcounter));
                         }
                     }
@@ -634,19 +635,20 @@ void MainFrm::getNetData(std::vector<wxSFShapeBase*> &shapeArray, vecString &Inp
         }
     }
 }
+
 void MainFrm::startCalculation()
 {
-     wxExecute("..\\calculateData\\bin\\Release\\Rf_Cascade_Analyzer.exe ..\\calculateData\\input_data.txt ..\\outputDataViewer\\outputdata.csv",
-           0,
-           0
-           );
+    wxString launchCommand =  _("..\\calculateData\\bin\\Release\\Rf_Cascade_Analyzer.exe ..\\calculateData\\input_data.txt ..\\outputDataViewer\\outputdata.csv");
+//    wxString launchCommand =  _("..\\calculateData\\bin\\Release\\Rf_Cascade_Analyzer.exe input_data.txt ../outputDataViewer/outputdata.csv");
+//    wxExecute(launchCommand, wxEXEC_ASYNC);
+    wxExecute(launchCommand, wxEXEC_SYNC);
 }
 
 void MainFrm::dataViewer()
 {
-    wxExecute("..\\outputDataViewer\\bin\\Release\\OutputDataViewer.exe",
-           0,
-           0
-           );
+    wxExecute("..\\outputDataViewer\\bin\\Release\\OutputDataViewer.exe", wxEXEC_SYNC,
+               0,
+               0
+            );
 }
 

@@ -31,7 +31,6 @@
 					<Add directory="$(#WX.lib)/gcc_dll/mswu" />
 				</ResourceCompiler>
 				<Linker>
-					<Add option="-s" />
 					<Add library="wxmsw31u_wxsf" />
 					<Add library="wxbase31u" />
 					<Add library="wxmsw31u_core" />

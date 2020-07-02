@@ -11,6 +11,12 @@
 class gainBlock : public wxSFPolygonShape
 {
 public:
+
+    enum CONNECTIONS{
+    OUTPUT,
+    INPUT
+    };
+
     XS_DECLARE_CLONABLE_CLASS(gainBlock);
 
     /*! \brief Default constructor. */
@@ -43,13 +49,16 @@ public:
     const wxString getGain();
     const wxString getNF();
     const wxString getBlockName();
-
+    CONNECTIONS findConnectionPoint(wxRealPoint &Point);
 private:
+    std::vector<std::pair<wxSFConnectionPoint*,CONNECTIONS>> connectionVec;
     wxSFEditTextShape *m_pName;
     wxSFEditTextShape *m_pGain;
     wxSFEditTextShape *m_pGainNumber;
     wxSFEditTextShape *m_pNF;
     wxSFEditTextShape *m_pNFNumber;
     wxString m_sDescription;
+
+
 };
 #endif

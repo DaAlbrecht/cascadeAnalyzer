@@ -1,0 +1,9 @@
+-block
+G	G0	G=10dB	NF=3dB
+G	G1	G=10dB	NF=3dB
+G	G2	G=10dB	NF=3dB
+G	G3	G=10dB	NF=3dB
+-nets
+G0.1	G1.1
+G1.1	G2.1
+G2.1	G3.1

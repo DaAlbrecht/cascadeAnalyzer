@@ -1,0 +1,35 @@
+# depslib dependency file v1.0
+1578405630 source:d:\cascadeanalayzer\calculatedata\main.cpp
+	<string>
+	<iostream>
+	<fstream>
+	<utility>
+	<algorithm>
+	<boost/algorithm/string.hpp>
+	<boost/regex.hpp>
+	<boost/foreach.hpp>
+	<boost/tokenizer.hpp>
+	<boost/graph/graphviz.hpp>
+	<boost/property_map/transform_value_property_map.hpp>
+	<boost/graph/graph_traits.hpp>
+	<boost/graph/depth_first_search.hpp>
+	<boost/property_map/property_map.hpp>
+	<boost/graph/connected_components.hpp>
+
+1593590786 source:e:\cascadeanalayzer\calculatedata\main.cpp
+	<string>
+	<iostream>
+	<fstream>
+	<utility>
+	<algorithm>
+	<boost/algorithm/string.hpp>
+	<boost/regex.hpp>
+	<boost/foreach.hpp>
+	<boost/tokenizer.hpp>
+	<boost/graph/graphviz.hpp>
+	<boost/property_map/transform_value_property_map.hpp>
+	<boost/graph/graph_traits.hpp>
+	<boost/graph/depth_first_search.hpp>
+	<boost/property_map/property_map.hpp>
+	<boost/graph/connected_components.hpp>
+

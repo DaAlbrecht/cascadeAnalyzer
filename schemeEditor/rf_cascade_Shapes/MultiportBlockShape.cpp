@@ -199,6 +199,7 @@ void multiportBlock::Initialize()
 }
 void multiportBlock::creatConnectionPoints()
 {
+    m_lstConnectionPts.Clear();
     size_t outputs;
     size_t inputs;
     outputs = wxAtoi(m_pOutputsNumber->GetText());
@@ -213,7 +214,7 @@ void multiportBlock::creatConnectionPoints()
     }
     for(size_t i = 1; i < inputs_devider; ++i)
     {
-        int height_inputs = 100 / outputs_devider;
+        int height_inputs = 100 / inputs_devider;
         wxSFShapeBase::AddConnectionPoint({0,height_inputs*i}, i, true);
     }
 }

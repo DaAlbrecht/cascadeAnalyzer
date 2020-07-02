@@ -7,7 +7,6 @@
 const wxRealPoint gainBlockShape[6]={wxRealPoint(0,80), wxRealPoint(80,40),
                                      wxRealPoint(0,0)
                                     };
-size_t  namenumber = 0;
 XS_IMPLEMENT_CLONABLE_CLASS(gainBlock, wxSFPolygonShape);
 
 gainBlock::gainBlock()
@@ -84,24 +83,25 @@ void gainBlock::setName(size_t number)
     {
         wxString namenumberstring = std::to_string(number);
 
-        m_pName->SetRelativePosition({20,30});
+        m_pName->SetRelativePosition({20, 30});
 		m_pName->SetStyle(sfsALWAYS_INSIDE | sfsHOVERING | sfsPROCESS_DEL | sfsPROPAGATE_DRAGGING | sfsPROPAGATE_SELECTION | sfsPROPAGATE_INTERACTIVE_CONNECTION );
 		SF_ADD_COMPONENT( m_pName, wxT("name") );
         m_pName->SetText("G" + namenumberstring);
     }
 
 }
-
 void gainBlock::Initialize()
 {
-	// create associated shape(s)
 
+    connectionVec.push_back(std::make_pair(wxSFShapeBase::AddConnectionPoint({100,50}, 0, false), CONNECTIONS::OUTPUT));
+    connectionVec.push_back(std::make_pair(wxSFShapeBase::AddConnectionPoint({0,50}, 0, false), CONNECTIONS::INPUT));
+	// create associated shape(s)
     m_pGain = new wxSFEditTextShape();
     // set some properties
     if(m_pGain)
     {
         wxRect shpBB = this->GetBoundingBox();
-        wxRealPoint txtpoint = (wxRealPoint(shpBB.GetLeft(), (shpBB.GetTop()+60) + shpBB.GetHeight()/2));
+        wxRealPoint txtpoint = (wxRealPoint(shpBB.GetLeft(), (shpBB.GetTop() + 60) + shpBB.GetHeight() / 2));
         m_pGain->SetRelativePosition(txtpoint);
 
 		m_pGain->SetStyle(sfsHOVERING | sfsPROCESS_DEL | sfsPROPAGATE_DRAGGING | sfsPROPAGATE_SELECTION | sfsPROPAGATE_INTERACTIVE_CONNECTION );
@@ -115,7 +115,7 @@ void gainBlock::Initialize()
     if(m_pGainNumber)
     {
         wxRect shpBB = this->GetBoundingBox();
-        wxRealPoint txtpoint = (wxRealPoint(shpBB.GetLeft()+50, (shpBB.GetTop()+60) + shpBB.GetHeight()/2));
+        wxRealPoint txtpoint = (wxRealPoint(shpBB.GetLeft() + 50, (shpBB.GetTop() + 60) + shpBB.GetHeight() / 2));
         m_pGainNumber->SetRelativePosition(txtpoint);
 
 		m_pGainNumber->SetStyle(sfsHOVERING | sfsPROCESS_DEL | sfsPROPAGATE_DRAGGING | sfsPROPAGATE_SELECTION | sfsPROPAGATE_INTERACTIVE_CONNECTION );
@@ -131,7 +131,7 @@ void gainBlock::Initialize()
     if(m_pNF)
     {
         wxRect shpBB = this->GetBoundingBox();
-        wxRealPoint txtpoint = (wxRealPoint(shpBB.GetLeft(), (shpBB.GetTop()-50) + shpBB.GetHeight()/2));
+        wxRealPoint txtpoint = (wxRealPoint(shpBB.GetLeft(), (shpBB.GetTop() - 50) + shpBB.GetHeight() / 2));
         m_pNF->SetRelativePosition(txtpoint);
 
 		m_pNF->SetStyle(sfsHOVERING | sfsPROCESS_DEL | sfsPROPAGATE_DRAGGING | sfsPROPAGATE_SELECTION | sfsPROPAGATE_INTERACTIVE_CONNECTION );
@@ -139,12 +139,12 @@ void gainBlock::Initialize()
 		SF_ADD_COMPONENT( m_pNF, wxT("NF") );
         m_pNF->SetText(" NF = ");
     }
-     m_pNFNumber = new wxSFEditTextShape();
+    m_pNFNumber = new wxSFEditTextShape();
     // set some properties
     if(m_pNFNumber)
     {
         wxRect shpBB = this->GetBoundingBox();
-        wxRealPoint txtpoint = (wxRealPoint(shpBB.GetLeft()+45, (shpBB.GetTop()-50) + shpBB.GetHeight()/2));
+        wxRealPoint txtpoint = (wxRealPoint(shpBB.GetLeft() + 45, (shpBB.GetTop() - 50) + shpBB.GetHeight() / 2));
         m_pNFNumber->SetRelativePosition(txtpoint);
 
 		m_pNFNumber->SetStyle(sfsHOVERING | sfsPROCESS_DEL | sfsPROPAGATE_DRAGGING | sfsPROPAGATE_SELECTION | sfsPROPAGATE_INTERACTIVE_CONNECTION );
@@ -152,12 +152,15 @@ void gainBlock::Initialize()
 		SF_ADD_COMPONENT( m_pNFNumber, wxT("NF") );
         m_pNFNumber->SetText("3dB");
     }
-     wxSFShapeBase::AddConnectionPoint({95,50}, 0, false);
-//     wxSFShapeBase::SetCustomDockPoint(1);
-     wxSFShapeBase::AddConnectionPoint({0,20}, 1, true);
-     wxSFShapeBase::AddConnectionPoint({0,80}, 1, true);
-
-
+//  wxSFShapeBase::AddConnectionPoint({100,50}, 0, false);
+//  wxSFShapeBase::AddConnectionPoint({0,50}, 0, false);
 }
 
+gainBlock::CONNECTIONS gainBlock::findConnectionPoint(wxRealPoint &Point)
+{
+
+    auto it = std::find_if(connectionVec.begin(), connectionVec.end(),
+        [&Point](const std::pair<wxSFConnectionPoint*,CONNECTIONS>& connections){return connections.first->Contains(Point);} );
+    return it->second;
+}
 

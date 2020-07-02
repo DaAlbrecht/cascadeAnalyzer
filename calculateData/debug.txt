@@ -1,0 +1,6 @@
+Debug File 
+input_data.txt
+../outputDataViewer/outputdata.csv
+gain calculated
+nf calculated
+outfile created
